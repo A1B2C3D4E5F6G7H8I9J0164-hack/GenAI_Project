@@ -1,5 +1,6 @@
 import streamlit as st
 import joblib
+import os
 import pandas as pd
 import numpy as np
 import time
@@ -16,10 +17,33 @@ apply_terminal_theme()
 def load_model():
     try:
         # Loading your specific model file
-        return joblib.load('ev_demand_timeseries.pkl')
+        # try current directory then models/ folder
+        possible_paths = ['ev_demand_timeseries.pkl', os.path.join('models', 'ev_demand_timeseries.pkl')]
+        for p in possible_paths:
+            if os.path.exists(p):
+                return joblib.load(p)
+        raise FileNotFoundError("Model file not found in repository")
     except Exception as e:
-        st.error(f"System Error: Model file 'ev_demand_timeseries.pkl' not found.")
-        return None
+        # Provide a deterministic dummy fallback so the app remains runnable
+        st.warning("Model file 'ev_demand_timeseries.pkl' not found — running with deterministic fallback model.")
+
+        class DummyModel:
+            def predict(self, X):
+                # X expected order: [Hour, Day, Lag1, RollingAvg, Price, Stability]
+                hour = X[:, 0]
+                lag1 = X[:, 2]
+                rolling = X[:, 3]
+                price = X[:, 4]
+                stability = X[:, 5]
+                # Simple deterministic formula to mimic a load prediction
+                return (30
+                        + 0.6 * lag1
+                        + 0.4 * rolling
+                        + 0.8 * (12 - np.abs(hour - 12))
+                        - 5.0 * price
+                        + 10.0 * stability)
+
+        return DummyModel()
 
 predictor = load_model()
 
@@ -40,12 +64,14 @@ with col_input:
     # Contextual Time-Series Inputs
     st.markdown("### Lag & Rolling Features")
     lag_1 = st.number_input("Demand Lag-1 (Previous Hour kW)", value=45.0)
+    lag_2 = st.number_input("Demand Lag-2 (Two Hours Ago kW)", value=44.0)
     rolling_avg = st.number_input("Rolling 3h Average (kW)", value=42.5)
     
     # External Factors
     st.markdown("### Environmental Factors")
     grid_price = st.slider("Electricity Price ($/kWh)", 0.1, 1.0, 0.15)
-    stability = st.slider("Stability Index", 0.0, 1.0, 0.95)
+    stability = st.slider("Grid Stability Index", 0.0, 1.0, 0.95)
+    num_evs = st.number_input("Number of EVs Charging", min_value=0, value=10)
 
     if st.button("RUN NEURAL INFERENCE"):
         with st.status("Initializing Core Engine...", expanded=True) as status:
@@ -55,8 +81,18 @@ with col_input:
             time.sleep(0.4)
             
             # Formatting features in the exact order the model expects
-            # Order: [Hour, Day, Lag1, RollingAvg, Price, Stability]
-            feature_vector = np.array([[target_hour, day_of_week, lag_1, rolling_avg, grid_price, stability]])
+            # Order: [Hour, DayOfWeek, Demand_Lag_1, Demand_Lag_2, Rolling_Avg_3h,
+            #         Electricity Price, Grid Stability, Number of EVs Charging]
+            feature_vector = np.array([[
+                target_hour,
+                day_of_week,
+                lag_1,
+                lag_2,
+                rolling_avg,
+                grid_price,
+                stability,
+                num_evs
+            ]])
             
             if predictor:
                 prediction = predictor.predict(feature_vector)[0]
