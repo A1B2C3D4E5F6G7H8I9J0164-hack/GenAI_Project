@@ -53,4 +53,3 @@ Thumbs.db
 
 # Data (large files)
 backend/data/*.csv
-backend/models/*.pkl

@@ -74,11 +74,9 @@ def show():
             if st.button("Generate Predictions"):
                 with st.spinner("Generating predictions..."):
                     try:
-                        # Get required features
-                        required_cols = ['Hour', 'DayOfWeek', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos', 'Demand_Lag_1', 'Demand_Lag_2']
-                        
-                        # Check if we have the features, if not compute them
+                        # Compute cyclical features if missing
                         if 'hour_sin' not in df.columns:
+                            st.info("Computing cyclical time features...")
                             for idx, row in df.iterrows():
                                 h_sin, h_cos, d_sin, d_cos = calculate_cyclical_features(row['Hour'], row['DayOfWeek'])
                                 df.at[idx, 'hour_sin'] = h_sin
@@ -86,13 +84,9 @@ def show():
                                 df.at[idx, 'dow_sin'] = d_sin
                                 df.at[idx, 'dow_cos'] = d_cos
                         
-                        # Fill missing values
-                        for col in required_cols:
-                            if col not in df.columns:
-                                df[col] = 0.0
-                        
-                        features = df[required_cols].fillna(0)
-                        predictions = predictor.predict(features)
+                        # ModelPredictor will fill in missing features with defaults
+                        st.info("Making batch predictions...")
+                        predictions = predictor.predict(df)
                         df['Prediction'] = predictions
                         
                         col1, col2 = st.columns(2)

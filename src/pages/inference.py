@@ -65,9 +65,19 @@ def show():
                 # Calculate cyclical features
                 hour_sin, hour_cos, dow_sin, dow_cos = calculate_cyclical_features(hour, day_num)
                 
-                # Create feature vector [Hour, DayOfWeek, hour_sin, hour_cos, dow_sin, dow_cos, Demand_Lag_1, Demand_Lag_2]
-                features = np.array([[hour, day_num, hour_sin, hour_cos, dow_sin, dow_cos, demand_lag_1, demand_lag_2]])
-                prediction = predictor.predict(features)[0]
+                # Create feature dict - ModelPredictor will fill in missing features with defaults
+                features_dict = {
+                    'Hour': hour,
+                    'DayOfWeek': day_num,
+                    'hour_sin': hour_sin,
+                    'hour_cos': hour_cos,
+                    'dow_sin': dow_sin,
+                    'dow_cos': dow_cos,
+                    'Demand_Lag_1': demand_lag_1,
+                    'Demand_Lag_2': demand_lag_2,
+                }
+                
+                prediction = predictor.predict(features_dict)[0]
                 
                 col1, col2, col3 = st.columns(3)
                 with col1:
@@ -91,8 +101,17 @@ def show():
                 
                 for h in hours:
                     h_sin, h_cos, d_sin, d_cos = calculate_cyclical_features(h, day_num)
-                    features = np.array([[h, day_num, h_sin, h_cos, d_sin, d_cos, prediction, demand_lag_1]])
-                    forecast = predictor.predict(features)[0]
+                    forecast_dict = {
+                        'Hour': h,
+                        'DayOfWeek': day_num,
+                        'hour_sin': h_sin,
+                        'hour_cos': h_cos,
+                        'dow_sin': d_sin,
+                        'dow_cos': d_cos,
+                        'Demand_Lag_1': prediction,
+                        'Demand_Lag_2': demand_lag_1,
+                    }
+                    forecast = predictor.predict(forecast_dict)[0]
                     forecasts.append(forecast)
                 
                 forecast_df = pd.DataFrame({
