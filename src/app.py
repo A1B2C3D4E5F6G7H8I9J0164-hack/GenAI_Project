@@ -10,6 +10,7 @@ import sys
 import os
 import json
 from utils import apply_terminal_theme, print_terminal_log
+from styles import MAIN_STYLES
 
 # Setup path for agent imports - handle both local and deployed scenarios
 _root = Path(__file__).parent.parent
@@ -28,186 +29,7 @@ st.set_page_config(
  }
 )
 apply_terminal_theme()
-
-# Enhanced styling
-st.markdown("""
-<style>
-:root {
- --primary: #0ea5e9;
- --secondary: #a855f7;
- --accent: #34d399;
- --danger: #f43f5e;
- --dark-bg: #0f0f19;
- --light-text: #f1f5f9;
-}
-
-body {
- background: linear-gradient(135deg, #0f0f19 0%, #1a1a2e 100%);
-}
-
-/* Enhanced glass effect cards */
-.glass-card {
- background: rgba(15, 15, 25, 0.7) !important;
- backdrop-filter: blur(10px) !important;
- border: 1px solid rgba(14, 165, 233, 0.15) !important;
- border-radius: 12px !important;
- padding: 1.5rem !important;
- margin: 0.5rem 0 !important;
- transition: all 0.3s ease !important;
-}
-
-.glass-card:hover {
- background: rgba(15, 15, 25, 0.85) !important;
- border-color: rgba(14, 165, 233, 0.3) !important;
- box-shadow: 0 8px 32px rgba(14, 165, 233, 0.1) !important;
-}
-
-/* Gradient text effects */
-.gradient-title {
- background: linear-gradient(120deg, #0ea5e9, #a855f7);
- -webkit-background-clip: text;
- -webkit-text-fill-color: transparent;
- background-clip: text;
- font-weight: 800;
- font-size: 3.5rem;
- margin-bottom: 0.5rem;
-}
-
-.gradient-subtitle {
- background: linear-gradient(120deg, #34d399, #0ea5e9);
- -webkit-background-clip: text;
- -webkit-text-fill-color: transparent;
- background-clip: text;
- font-size: 1.25rem;
- font-weight: 600;
-}
-
-/* Enhanced metric cards */
-.metric-card {
- background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(168, 85, 247, 0.1));
- border-left: 4px solid #0ea5e9;
- padding: 1.25rem;
- border-radius: 10px;
- margin: 0.5rem 0;
-}
-
-/* Animated buttons */
-.stButton button {
- background: linear-gradient(135deg, #0ea5e9, #06b6d4);
- border: none;
- border-radius: 8px;
- font-weight: 600;
- transition: all 0.3s ease;
- text-transform: uppercase;
- letter-spacing: 0.05em;
- padding: 0.75rem 1.5rem !important;
-}
-
-.stButton button:hover {
- background: linear-gradient(135deg, #06b6d4, #0ea5e9);
- box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3);
- transform: translateY(-2px);
-}
-
-/* Section titles */
-.section-title {
- color: #0ea5e9;
- font-size: 1.5rem;
- font-weight: 700;
- margin: 1.5rem 0 1rem 0;
- padding-bottom: 0.75rem;
- border-bottom: 2px solid rgba(14, 165, 233, 0.3);
-}
-
-/* Tabs styling */
-.stTabs {
- margin-top: 1.5rem;
-}
-
-[data-baseweb="tab"] {
- border-radius: 8px 8px 0 0;
- font-weight: 600;
- padding: 0.75rem 1.5rem !important;
-}
-
-[data-baseweb="tab"][aria-selected="true"] {
- background: linear-gradient(135deg, #0ea5e9, #a855f7);
-}
-
-/* Input styling */
-.stNumberInput input, .stSlider input {
- border-radius: 8px;
- border: 1px solid rgba(14, 165, 233, 0.3);
-}
-
-/* File uploader */
-.stFileUploader {
- border-radius: 12px;
- border: 2px dashed rgba(14, 165, 233, 0.3);
-}
-
-.stFileUploader:hover {
- border-color: rgba(14, 165, 233, 0.6);
- background: rgba(14, 165, 233, 0.05);
-}
-
-/* Status badge */
-.status-badge {
- display: inline-block;
- padding: 0.35rem 0.85rem;
- border-radius: 20px;
- font-size: 0.85rem;
- font-weight: 600;
- margin-right: 0.5rem;
-}
-
-.status-online {
- background: rgba(16, 185, 129, 0.2);
- color: #10b981;
- border: 1px solid #10b981;
-}
-
-.status-alert {
- background: rgba(244, 63, 94, 0.2);
- color: #f43f5e;
- border: 1px solid #f43f5e;
-}
-
-/* Expander styling */
-.streamlit-expanderHeader {
- border-radius: 8px;
- background: rgba(14, 165, 233, 0.1);
- border: 1px solid rgba(14, 165, 233, 0.2);
-}
-
-/* Success and error messages */
-.stSuccess {
- background: rgba(16, 185, 129, 0.1);
- border-left: 4px solid #10b981;
-}
-
-.stError {
- background: rgba(244, 63, 94, 0.1);
- border-left: 4px solid #f43f5e;
-}
-
-.stWarning {
- background: rgba(250, 204, 21, 0.1);
- border-left: 4px solid #facc15;
-}
-
-/* Smooth animations */
-@keyframes fadeIn {
- from { opacity: 0; transform: translateY(10px); }
- to { opacity: 1; transform: translateY(0); }
-}
-
-.stMetricValue {
- animation: fadeIn 0.5s ease-out;
-}
-
-</style>
-""", unsafe_allow_html=True)
+st.markdown(MAIN_STYLES, unsafe_allow_html=True)
 
 # ==========================================
 # Cached Model & Agent Loaders
@@ -464,12 +286,14 @@ with tab1:
  st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
  
  with st.expander(" Profile Statistics", expanded=False):
- st.markdown(f"""
- - **Peak Load**: {max(y):.3f} kW (Hour 12:00)
- - **Off-Peak**: {min(y):.3f} kW (Hour 6:00) 
- - **Average**: {np.mean(y):.3f} kW
- - **Volatility**: {np.std(y):.4f} kW (std dev)
- """)
+ peak = max(y)
+ low = min(y)
+ avg = np.mean(y)
+ vol = np.std(y)
+ st.text(f"Peak Load: {peak:.3f} kW (Hour 12:00)")
+ st.text(f"Off-Peak: {low:.3f} kW (Hour 6:00)")
+ st.text(f"Average: {avg:.3f} kW")
+ st.text(f"Volatility: {vol:.4f} kW (std dev)")
 
 
 # ==========================================
@@ -744,10 +568,11 @@ with tab3:
  """, unsafe_allow_html=True)
  
  if rec.get('estimated_cost'):
+ cost = f"${rec.get('estimated_cost'):,.0f}"
  st.markdown(f"""
  <div class="glass-card" style="margin-top: 1rem;">
  <p style="color: #a0aec0; font-size: 0.85rem;"> Estimated Cost</p>
- <p style="color: #f43f5e; font-weight: 700; font-size: 1.2rem;">${rec.get("estimated_cost"):,.0f}</p>
+ <p style="color: #f43f5e; font-weight: 700; font-size: 1.2rem;">{cost}</p>
  </div>
  """, unsafe_allow_html=True)
  
@@ -822,7 +647,7 @@ with tab4:
  <div class="metric-card" style="border-left-color: #0ea5e9;">
  <p style="color: #a0aec0; font-size: 0.85rem; margin-bottom: 0.75rem;"> Active Chargers</p>
  <p style="color: #0ea5e9; font-size: 2.2rem; font-weight: 800;">150</p>
- <p style="color: #64748b; font-size: 0.75rem; margin-top: 0.5rem;">↑ 12% from last hour</p>
+ <p style="color: #64748b; font-size: 0.75rem; margin-top: 0.5rem;">Up 12% from last hour</p>
  </div>
  """, unsafe_allow_html=True)
  
@@ -831,7 +656,7 @@ with tab4:
  <div class="metric-card" style="border-left-color: #a855f7;">
  <p style="color: #a0aec0; font-size: 0.85rem; margin-bottom: 0.75rem;"> Utilization</p>
  <p style="color: #a855f7; font-size: 2.2rem; font-weight: 800;">72%</p>
- <p style="color: #64748b; font-size: 0.75rem; margin-top: 0.5rem;">↓ 3% from target</p>
+ <p style="color: #64748b; font-size: 0.75rem; margin-top: 0.5rem;">Down 3% from target</p>
  </div>
  """, unsafe_allow_html=True)
  
@@ -889,6 +714,8 @@ with tab4:
  
  with col_chart2:
  st.markdown('<p style="color: #0ea5e9; font-weight: 700; margin-bottom: 1rem; font-size: 1.1rem;"> Summary Stats</p>', unsafe_allow_html=True)
+ peak_load = f"{max(demand):.1f}"
+ avg_load = f"{np.mean(demand):.1f}"
  st.markdown(f"""
  <div class="glass-card">
  <div style="margin-bottom: 1.2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(14, 165, 233, 0.2);">
@@ -897,11 +724,11 @@ with tab4:
  </div>
  <div style="margin-bottom: 1.2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(14, 165, 233, 0.2);">
  <p style="color: #a0aec0; font-size: 0.8rem;">Peak Load</p>
- <p style="color: #0ea5e9; font-size: 1.8rem; font-weight: 700;">{max(demand):.1f} kW</p>
+ <p style="color: #0ea5e9; font-size: 1.8rem; font-weight: 700;">{peak_load} kW</p>
  </div>
  <div>
  <p style="color: #a0aec0; font-size: 0.8rem;">Avg Load</p>
- <p style="color: #34d399; font-size: 1.8rem; font-weight: 700;">{np.mean(demand):.1f} kW</p>
+ <p style="color: #34d399; font-size: 1.8rem; font-weight: 700;">{avg_load} kW</p>
  </div>
  </div>
  """, unsafe_allow_html=True)

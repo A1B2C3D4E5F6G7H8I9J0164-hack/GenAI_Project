@@ -39,7 +39,6 @@ import Logo from '../components/Logo';
 import { PageMotion, Stagger, StaggerItem } from '../components/PageMotion';
 import { chartTooltipProps } from '../lib/chartTheme';
 import { getSampleData } from '../api/client';
-import { useDataContext } from '../App';
 
 const PIE_COLORS = ['#22d3ee', '#a855f7', '#34d399', '#f472b6', '#fbbf24', '#60a5fa', '#fb923c'];
 
@@ -89,7 +88,6 @@ const UploadPrompt = () => {
 };
 
 const Dashboard = () => {
-  const { dataUploaded } = useDataContext();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
