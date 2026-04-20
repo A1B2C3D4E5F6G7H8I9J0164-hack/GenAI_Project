@@ -13,8 +13,6 @@ import sys
 import logging
 from typing import Optional
 import json
-import asyncio
-from threading import Lock
 
 # Setup logging
 logging.basicConfig(
@@ -26,10 +24,6 @@ logger = logging.getLogger(__name__)
 # Setup Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Global state for model loading
-_models_loading = False
-_models_ready = False
-_model_load_lock = Lock()
 app = FastAPI(
     title="EV Charging Demand Prediction API",
     description="Intelligent forecasting and infrastructure planning for EV charging networks",
@@ -541,89 +535,22 @@ async def general_exception_handler(request, exc):
 
 
 # ──────────────────────────────────────
-# Background Model Loading
-# ──────────────────────────────────────
-
-async def _load_models_background():
-    """
-    Load ML models in background without blocking startup.
-    This runs asynchronously after the server has started listening.
-    """
-    global _models_ready, _models_loading
-    
-    logger.info("🔄 [Background] Starting model loading...")
-    _models_loading = True
-    
-    try:
-        from ml.predictor import load_model, ensure_model_trained, _bundle_path
-        
-        bundle_path = _bundle_path()
-        model_exists = os.path.isfile(bundle_path)
-        
-        if not model_exists:
-            logger.warning("⚠️ [Background] Model bundle not found. Training from scratch...")
-            ensure_model_trained()
-            logger.info("✅ [Background] Model trained and saved")
-        
-        # Try to load the model
-        try:
-            estimator, scaler = load_model()
-            logger.info("✅ [Background] Model loaded successfully")
-            _models_ready = True
-        except AttributeError as ae:
-            # Handle sklearn version mismatch
-            if "sklearn" in str(ae) or "__pyx_unpickle" in str(ae):
-                logger.warning(f"⚠️ [Background] scikit-learn version mismatch: {ae}")
-                logger.info("🔄 [Background] Rebuilding model to match current sklearn version...")
-                if os.path.isfile(bundle_path):
-                    os.remove(bundle_path)
-                    logger.info(f"[Background] Deleted incompatible model bundle")
-                ensure_model_trained()
-                estimator, scaler = load_model()
-                logger.info("✅ [Background] Model rebuilt and loaded successfully")
-                _models_ready = True
-            else:
-                raise
-        
-        logger.info("✅ [Background] Model loading completed")
-    
-    except Exception as e:
-        logger.error(f"❌ [Background] Model loading failed: {str(e)}")
-        import traceback
-        logger.error(traceback.format_exc())
-        # Don't crash - models can be loaded on-demand per request
-        _models_ready = False
-    
-    finally:
-        _models_loading = False
-
-
-# ──────────────────────────────────────
 # Startup/Shutdown Events
 # ──────────────────────────────────────
 
 @app.on_event("startup")
 async def startup_event():
     """
-    Fast startup that returns immediately without waiting for models.
-    Models load in background via asyncio.create_task().
-    
-    This allows Render to detect the server is listening on the port
-    within the 30-second timeout window.
+    Minimal startup - server binds to port immediately.
+    Models are loaded on-demand during first request.
     """
-    logger.info("🚀 Backend startup - Server listening (models loading in background)")
-    
-    # Schedule model loading as background task
-    # This runs WITHOUT blocking the startup return
-    asyncio.create_task(_load_models_background())
-    
-    logger.info("✅ Startup event completed - Server ready for requests")
+    logger.info("✅ Backend startup complete - Server ready to accept requests")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    logger.info("🛑 Backend shutdown - Cleaning up resources")
+    logger.info("🛑 Backend shutdown")
     # TODO: Save model cache, close database connections, etc.
 
 
