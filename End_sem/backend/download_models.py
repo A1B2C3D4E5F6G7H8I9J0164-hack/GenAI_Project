@@ -28,6 +28,13 @@ def ensure_model_ready():
     os.makedirs(models_dir, exist_ok=True)
     os.makedirs(data_dir, exist_ok=True)
 
+    # Check scikit-learn version
+    try:
+        import sklearn
+        print(f"📦 Active scikit-learn version: {sklearn.__version__}")
+    except ImportError:
+        pass
+
     # Fast path: model already exists
     if os.path.isfile(bundle_path):
         size_mb = os.path.getsize(bundle_path) / (1024 * 1024)

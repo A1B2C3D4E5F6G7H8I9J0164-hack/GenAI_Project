@@ -6,7 +6,7 @@ python-dotenv
 pandas
 numpy
 openpyxl
-scikit-learn>=1.4.0
+scikit-learn==1.6.1
 joblib
 plotly
 streamlit
