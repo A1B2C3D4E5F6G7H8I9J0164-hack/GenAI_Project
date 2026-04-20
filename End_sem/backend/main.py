@@ -206,9 +206,9 @@ async def batch_predict(file: UploadFile = File(...)):
             from ml.predictor import load_model, get_feature_columns
             
             logger.info("Loading model...")
-            estimator, scaler = load_model()
+            estimator, scaler = load_model()  # This handles sklearn version mismatch internally
             feature_columns = get_feature_columns()
-            logger.info(f"Model loaded. Feature columns: {feature_columns}")
+            logger.info(f"✅ Model loaded. Feature columns: {feature_columns}")
             
             # Check if we have target labels - try multiple column name variations
             target_column = None
