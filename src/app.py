@@ -324,10 +324,7 @@ with col_status[1]:
 with col_status[2]:
  st.markdown("""
  <div class="metric-card">
- <p style="color: #a0aec0; font-size: 0.85rem; margin-bottom: 0.5rem;">⚙️ Inference Engine</p>
- <p style="color: #a855f7; font-size: 1.5rem; font-weight: 700;">LIVE</p>
- <p style="color: #64748b; font-size: 0.75rem; margin-top: 0.5rem;">Tree-based ensemble</p>
- </div>
+        <p style="color: #a0aec0; font-size: 0.85rem; margin-bottom: 0.5rem;">Inference Engine</p>
  """, unsafe_allow_html=True)
 
 with col_status[3]:
@@ -972,7 +969,7 @@ with tab4:
  """, unsafe_allow_html=True)
  
  # Performance metrics
- st.markdown('<p style="color: #0ea5e9; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; font-size: 1.1rem;">⚙️ System Performance</p>', unsafe_allow_html=True)
+ st.markdown('<p style="color: #0ea5e9; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; font-size: 1.1rem;">System Performance</p>', unsafe_allow_html=True)
  
  perf_col1, perf_col2, perf_col3, perf_col4 = st.columns(4, gap="small")
  
