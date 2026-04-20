@@ -8,39 +8,33 @@ import sys
 import os
 from pathlib import Path
 
-# CRITICAL: Setup path BEFORE any imports from local modules
-# Get absolute path to src directory
-SRC_DIR = Path(__file__).parent.absolute()
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
+# Setup path to project root for imports
+PROJECT_ROOT = Path(__file__).parent.parent.absolute()
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 import streamlit as st
 
-# Now import local modules
+# Import local modules with explicit src. prefix
 try:
-    from utils import apply_terminal_theme
-    from styles import MAIN_STYLES
-    from config import PAGE_CONFIG
-    from pages import inference, batch, planning, dashboard
+    from src.utils import apply_terminal_theme
+    from src.styles import MAIN_STYLES
+    from src.config import PAGE_CONFIG
+    from src.pages import inference, batch, planning, dashboard
 except ImportError as e:
-    st.error(f"Import Error: {e}\nSys Path: {sys.path}")
+    st.error(f"Import Error: {e}\nMake sure all files are in src/ directory")
     st.stop()
 
 def main():
     """Main application."""
     
-    # Page config
     st.set_page_config(**PAGE_CONFIG)
-    
-    # Apply theme and styles
     apply_terminal_theme()
     st.markdown(MAIN_STYLES, unsafe_allow_html=True)
     
-    # Header
     st.title("⚡ NEURAL GRID")
     st.write("Advanced EV Charging Network Forecasting System")
     
-    # Tabs
     tab1, tab2, tab3, tab4 = st.tabs([
         "🔮 Inference",
         "📊 Batch Analysis",
