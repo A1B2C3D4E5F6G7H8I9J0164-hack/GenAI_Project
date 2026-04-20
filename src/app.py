@@ -11,6 +11,7 @@ import os
 import json
 from utils import apply_terminal_theme, print_terminal_log
 from styles import MAIN_STYLES
+from styles import MAIN_STYLES
 
 # Setup path for agent imports - handle both local and deployed scenarios
 _root = Path(__file__).parent.parent
