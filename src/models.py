@@ -1,9 +1,17 @@
 """Model Loading and Caching"""
 
+import sys
+from pathlib import Path
+
+# Setup path BEFORE any imports
+PROJECT_ROOT = Path(__file__).parent.parent.absolute()
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import streamlit as st
 import joblib
-from pathlib import Path
-from config import MODEL_PATHS
+
+from src.config import MODEL_PATHS
 
 @st.cache_resource
 def load_model():
