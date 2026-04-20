@@ -571,7 +571,7 @@ async def general_exception_handler(request, exc):
 async def startup_event():
     """
     Fast startup - server binds to port immediately.
-    Model loads asynchronously in background.
+    Model loads in separate thread (doesn't block event loop).
     """
     logger.info("=" * 60)
     logger.info("🚀 BACKEND STARTUP")
@@ -582,11 +582,12 @@ async def startup_event():
         logger.info("✅ CORS middleware configured")
         logger.info("✅ Routes registered")
         logger.info("✅ Server ready to accept requests")
-        logger.info("⏳ Model will pre-load in background...")
+        logger.info("⏳ Model will pre-load in background thread...")
         
-        # Start background model loading (non-blocking)
-        import asyncio
-        asyncio.create_task(load_model_background())
+        # Start background model loading in separate thread (truly non-blocking)
+        import threading
+        model_thread = threading.Thread(target=load_model_background, daemon=True)
+        model_thread.start()
         
     except Exception as e:
         logger.error(f"❌ Startup error: {str(e)}", exc_info=True)
@@ -594,8 +595,8 @@ async def startup_event():
     logger.info("=" * 60)
 
 
-async def load_model_background():
-    """Load model in background without blocking server startup."""
+def load_model_background():
+    """Load model in background thread without blocking event loop or startup."""
     model_state.is_loading = True
     try:
         logger.info("🔄 Background: Pre-loading model cache...")
