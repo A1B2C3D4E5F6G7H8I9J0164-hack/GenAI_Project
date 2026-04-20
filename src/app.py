@@ -4,6 +4,9 @@ Main Streamlit application entry point.
 Organizes tabs for inference, batch analysis, planning, and dashboard.
 """
 
+# Version string - increment to force cache invalidation on redeploy
+APP_VERSION = "2.1.0"
+
 import sys
 import os
 from pathlib import Path

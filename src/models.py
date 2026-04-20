@@ -13,8 +13,11 @@ import joblib
 
 from src.config import MODEL_PATHS
 
-@st.cache_resource
-def load_model():
+# Cache busting version - increment when model loading changes
+MODEL_CACHE_VERSION = "2.1.0"
+
+@st.cache_resource(show_spinner=False)
+def load_model(_version=MODEL_CACHE_VERSION):
     """Load pre-trained Random Forest model for EV demand prediction."""
     try:
         found_path = None
@@ -40,8 +43,8 @@ def load_model():
         st.error(f"Details: {traceback.format_exc()}")
         return None
 
-@st.cache_resource
-def load_agent():
+@st.cache_resource(show_spinner=False)
+def load_agent(_version=MODEL_CACHE_VERSION):
     """Load AI agent for planning workflows."""
     try:
         from agent.run_agent import run_planning_agent
