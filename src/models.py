@@ -78,7 +78,7 @@ def load_model(_version=MODEL_CACHE_VERSION):
         
         # Load model bundle
         model_bundle = joblib.load(str(found_path))
-        st.success(f"✓ Model loaded successfully")
+        st.success(f" Model loaded successfully")
         
         # Extract components
         estimator = model_bundle.get('estimator')
@@ -105,7 +105,7 @@ def load_agent(_version=MODEL_CACHE_VERSION):
         from agent.run_agent import run_planning_agent
         return run_planning_agent
     except Exception as e:
-        st.warning(f"⚠ Agent system not available: {str(e)}")
+        st.warning(f" Agent system not available: {str(e)}")
         return None
 
 # Initialize models on import

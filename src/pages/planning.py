@@ -55,7 +55,7 @@ def show():
                         "Monitor Grid load for potential bottlenecks"
                     ]
                     for rec in recommendations:
-                        st.write(f"• {rec}")
+                        st.write(f" {rec}")
                 else:
                     alert_box("No plan generated", "warning")
             except Exception as e:

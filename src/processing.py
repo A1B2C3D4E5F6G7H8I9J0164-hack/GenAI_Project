@@ -27,7 +27,7 @@ def preprocess_data(df_raw):
         return df
         
     except Exception as e:
-        st.error(f"❌ Processing Error: {str(e)}")
+        st.error(f" Processing Error: {str(e)}")
         return None
 
 def aggregate_hourly(df):
@@ -40,7 +40,7 @@ def aggregate_hourly(df):
         }).reset_index()
         return df_hourly
     except Exception as e:
-        st.error(f"❌ Aggregation Error: {str(e)}")
+        st.error(f" Aggregation Error: {str(e)}")
         return None
 
 def calculate_statistics(df, column):
@@ -56,7 +56,7 @@ def calculate_statistics(df, column):
             'q75': df[column].quantile(0.75),
         }
     except Exception as e:
-        st.error(f"❌ Statistics Error: {str(e)}")
+        st.error(f" Statistics Error: {str(e)}")
         return None
 
 def format_number(value, decimals=2):

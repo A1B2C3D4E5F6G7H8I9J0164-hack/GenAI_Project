@@ -287,4 +287,4 @@ def apply_terminal_theme():
 
 def print_terminal_log(message: str):
     """Display a terminal-style log message with professional styling."""
-    st.markdown(f'<p class="terminal-text">▹ {message}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="terminal-text"> {message}</p>', unsafe_allow_html=True)

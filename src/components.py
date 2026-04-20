@@ -5,13 +5,9 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 
-def metric_card(label, value, unit="", icon="📊"):
+def metric_card(label, value, unit="", icon=""):
     """Display metric card with label and value."""
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.metric(label=label, value=value)
-    with col2:
-        st.write(icon)
+    st.metric(label=label, value=value)
 
 def section_header(title):
     """Display section header."""
@@ -22,9 +18,9 @@ def status_badge(status, label):
     colors = {
         'online': '#10b981',
         'offline': '#6b7280',
-        'alert': '#f43f5e'
+        'alert': '#ff003c'
     }
-    color = colors.get(status, '#0ea5e9')
+    color = colors.get(status, '#ff003c')
     html = f"""
     <div style="display: inline-block; padding: 0.35rem 0.85rem; 
                 border-radius: 20px; font-size: 0.85rem; font-weight: 600; 
@@ -47,13 +43,13 @@ def line_chart(data, x_col, y_col, title=""):
             line_shape="spline"
         )
         fig.update_traces(
-            line=dict(color='#0ea5e9', width=2),
+            line=dict(color='#00f2ff', width=2),
             fill='tozeroy',
-            fillcolor='rgba(14, 165, 233, 0.1)'
+            fillcolor='rgba(0, 242, 255, 0.1)'
         )
         st.plotly_chart(fig, use_container_width=True)
     except Exception as e:
-        st.error(f"❌ Chart Error: {str(e)}")
+        st.error(f"Chart Error: {str(e)}")
 
 def bar_chart(data, x_col, y_col, title=""):
     """Create interactive bar chart."""
@@ -65,10 +61,10 @@ def bar_chart(data, x_col, y_col, title=""):
             title=title,
             template="plotly_dark"
         )
-        fig.update_traces(marker=dict(color='#a855f7'))
+        fig.update_traces(marker=dict(color='#ff003c'))
         st.plotly_chart(fig, use_container_width=True)
     except Exception as e:
-        st.error(f"❌ Chart Error: {str(e)}")
+        st.error(f"Chart Error: {str(e)}")
 
 def data_table(df, title=""):
     """Display formatted data table."""
@@ -82,14 +78,7 @@ def data_table(df, title=""):
 
 def alert_box(message, type_="info"):
     """Display alert message."""
-    icons = {
-        'info': 'ℹ️',
-        'success': '✅',
-        'warning': '⚠️',
-        'error': '❌'
-    }
-    icon = icons.get(type_, 'ℹ️')
-    st.info(f"{icon} {message}")
+    st.info(f"[{type_.upper()}] {message}")
 
 def input_section(title):
     """Create input section with header."""

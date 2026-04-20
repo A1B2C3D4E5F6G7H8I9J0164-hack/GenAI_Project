@@ -35,13 +35,12 @@ def main():
     apply_terminal_theme()
     st.markdown(MAIN_STYLES, unsafe_allow_html=True)
     
-    st.title("NEURAL GRID")
-    st.write("Advanced EV Charging Network Forecasting System")
+    st.title("NEURAL GRID: EV DEMAND FORECASTING")
     
     tab1, tab2, tab3, tab4 = st.tabs([
-        "Real-time Inference",
-        "Batch Analysis",
-        "Agent Planning",
+        "Manual Prediction",
+        "Raw File Batch Processing",
+        "AI Infrastructure Planner",
         "Operations Dashboard"
     ])
     
