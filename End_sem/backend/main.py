@@ -570,36 +570,20 @@ async def general_exception_handler(request, exc):
 @app.on_event("startup")
 async def startup_event():
     """
-    Fast startup - server binds to port immediately.
-    Model loads in separate thread (doesn't block event loop).
+    MINIMAL startup - returns immediately so port can bind.
+    No blocking operations, no logging that could buffer.
     """
-    logger.info("=" * 60)
-    logger.info("🚀 BACKEND STARTUP")
-    logger.info("=" * 60)
-    
-    try:
-        logger.info("✅ FastAPI app initialized")
-        logger.info("✅ CORS middleware configured")
-        logger.info("✅ Routes registered")
-        logger.info("✅ Server ready to accept requests")
-        logger.info("⏳ Model will pre-load in background thread...")
-        
-        # Start background model loading in separate thread (truly non-blocking)
-        import threading
-        model_thread = threading.Thread(target=load_model_background, daemon=True)
-        model_thread.start()
-        
-    except Exception as e:
-        logger.error(f"❌ Startup error: {str(e)}", exc_info=True)
-    
-    logger.info("=" * 60)
+    # Spawn model loading in daemon thread - completely non-blocking
+    import threading
+    model_thread = threading.Thread(target=load_model_background, daemon=True)
+    model_thread.start()
+    # Return immediately - don't log in startup event
 
 
 def load_model_background():
     """Load model in background thread without blocking event loop or startup."""
     model_state.is_loading = True
     try:
-        logger.info("🔄 Background: Pre-loading model cache...")
         from ml.predictor import load_model
         load_model()
         model_state.is_loaded = True
@@ -609,7 +593,6 @@ def load_model_background():
         model_state.is_loading = False
         model_state.error_message = str(e)
         logger.warning(f"⚠️ Background: Model pre-load warning: {e}")
-        logger.info("✅ Will use fallback predictor on first request")
 
 
 @app.on_event("shutdown")
