@@ -39,40 +39,54 @@ def ensure_model_trained() -> None:
             print(f"Training failed: {e}. Will use fallback predictor.")
 
 
+import threading
+
+_bundle_lock = threading.Lock()
+
 def load_bundle() -> Dict[str, Any]:
     global _bundle
+    
+    # Fast path without lock
     if _bundle is not None:
         return _bundle
 
-    ensure_model_trained()
-    
-    try:
-        _bundle = joblib.load(_bundle_path())
-        return _bundle
-    except AttributeError as e:
-        # Handle scikit-learn version mismatch
-        if "sklearn" in str(e) or "__pyx_unpickle" in str(e):
-            print(f"⚠️ scikit-learn version mismatch: {e}")
-            print("🔄 Attempting to retrain model...")
-            
-            # Delete incompatible bundle
-            bundle_path = _bundle_path()
-            if os.path.isfile(bundle_path):
-                os.remove(bundle_path)
-                print(f"Deleted incompatible bundle: {bundle_path}")
-            
-            # Retrain with current environment
-            try:
-                train_and_save_bundle(_backend_dir(), force_refresh_data=False)
-                _bundle = joblib.load(_bundle_path())
-                print("✅ Model successfully retrained and loaded")
-                return _bundle
-            except Exception as retrain_err:
-                print(f"❌ Retraining failed: {retrain_err}")
-                # Return fallback bundle with dummy estimator
-                return _get_fallback_bundle()
-        else:
-            raise
+    with _bundle_lock:
+        # Check again inside lock
+        if _bundle is not None:
+            return _bundle
+
+        ensure_model_trained()
+        
+        try:
+            _bundle = joblib.load(_bundle_path())
+            return _bundle
+        except AttributeError as e:
+            # Handle scikit-learn version mismatch
+            if "sklearn" in str(e) or "__pyx_unpickle" in str(e):
+                print(f"⚠️ scikit-learn version mismatch: {e}")
+                print("🔄 Attempting to retrain model...")
+                
+                # Delete incompatible bundle
+                bundle_path = _bundle_path()
+                if os.path.isfile(bundle_path):
+                    try:
+                        os.remove(bundle_path)
+                        print(f"Deleted incompatible bundle: {bundle_path}")
+                    except OSError:
+                        pass
+                
+                # Retrain with current environment using the robust ensure_model_trained
+                try:
+                    ensure_model_trained()
+                    _bundle = joblib.load(_bundle_path())
+                    print("✅ Model successfully retrained and loaded")
+                    return _bundle
+                except Exception as retrain_err:
+                    print(f"❌ Retraining failed: {retrain_err}")
+                    # Return fallback bundle with dummy estimator
+                    return _get_fallback_bundle()
+            else:
+                raise
 
 
 def _get_fallback_bundle() -> Dict[str, Any]:

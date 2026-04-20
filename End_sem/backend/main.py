@@ -45,7 +45,7 @@ app = FastAPI(
 FRONTEND_URL = os.getenv("FRONTEND_URL", "").strip()
 ALLOWED_ORIGINS = [
     "http://localhost:3000",                  # Local React dev
-    "http://localhost:5173",                  # Local Vite dev
+    "http://localhost:5174",                  # Local Vite dev
     "http://localhost:8501",                  # Streamlit local
     "https://gen-ai-project-rosy.vercel.app"  # Current Vercel frontend (https!)
 ]
