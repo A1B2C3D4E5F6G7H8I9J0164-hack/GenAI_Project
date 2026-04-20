@@ -20,10 +20,23 @@ def _bundle_path() -> str:
 
 
 def ensure_model_trained() -> None:
-    """Train (or retrain) if bundle missing."""
+    """Train (or retrain) if bundle missing. Auto-generates synthetic data if needed."""
     if not os.path.isfile(_bundle_path()):
         print("Model bundle not found. Training from data/ ...")
-        train_and_save_bundle(_backend_dir(), force_refresh_data=False)
+        try:
+            train_and_save_bundle(_backend_dir(), force_refresh_data=False)
+        except FileNotFoundError:
+            # No CSV data at all — generate synthetic data and retry
+            print("No training data found. Generating synthetic data for training...")
+            try:
+                from .generate_synthetic import generate_synthetic_csv
+                data_path = os.path.join(_backend_dir(), "data")
+                generate_synthetic_csv(data_path)
+                train_and_save_bundle(_backend_dir(), force_refresh_data=True)
+            except Exception as e:
+                print(f"Synthetic training failed: {e}. Will use fallback predictor.")
+        except Exception as e:
+            print(f"Training failed: {e}. Will use fallback predictor.")
 
 
 def load_bundle() -> Dict[str, Any]:

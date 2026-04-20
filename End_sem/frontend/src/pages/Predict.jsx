@@ -90,29 +90,7 @@ const Predict = () => {
     residual: row.demand - currentY * 0.15,
   }));
 
-  if (!dataUploaded) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[55vh] text-center page-transition px-4">
-        <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-5 mb-8">
-          <AlertTriangle className="w-10 h-10 text-amber-400" aria-hidden />
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-3">
-          Ingest data first
-        </h1>
-        <p className="text-zinc-400 max-w-lg mb-8 leading-relaxed">
-          Process a batch file so the model can align with your station telemetry before manual inference.
-        </p>
-        <Link
-          to="/batch"
-          className="inline-flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-6 py-3 text-sm font-semibold text-cyan-300 hover:bg-cyan-500/20 transition-colors"
-        >
-          <Zap className="w-4 h-4" aria-hidden />
-          Go to ingest
-          <ArrowRight className="w-4 h-4" aria-hidden />
-        </Link>
-      </div>
-    );
-  }
+  // removed dataUploaded gate
 
   return (
     <PageMotion className="space-y-6 sm:space-y-8 page-transition">

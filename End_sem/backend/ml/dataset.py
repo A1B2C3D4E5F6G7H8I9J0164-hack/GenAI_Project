@@ -161,7 +161,19 @@ def build_merged_engineered_frame(force_refresh: bool = False) -> pd.DataFrame:
     """
     paths = list_csv_files()
     if not paths:
-        raise FileNotFoundError(f"No CSV files found in {data_dir()}")
+        # No CSV data available — generate synthetic training data
+        print(f"[dataset] No CSV files in {data_dir()}. Generating synthetic data...")
+        try:
+            from .generate_synthetic import generate_synthetic_csv
+            generate_synthetic_csv(data_dir())
+            paths = list_csv_files()
+        except Exception as gen_err:
+            print(f"[dataset] Synthetic generation failed: {gen_err}")
+
+        if not paths:
+            raise FileNotFoundError(
+                f"No CSV files found in {data_dir()} and synthetic generation failed."
+            )
 
     if not force_refresh and _cache_valid(paths):
         return joblib.load(_cached_frame_path())

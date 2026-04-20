@@ -74,12 +74,15 @@ app.add_middleware(
 async def health_check():
     """Health check endpoint with model loading status"""
     if model_state.is_loading:
-        return {
-            "status": "loading",
-            "service": "EV-Charging-Backend",
-            "version": "2.0.0",
-            "message": "Model is pre-loading in background",
-        }, 202  # Accepted - still loading
+        return JSONResponse(
+            status_code=202,
+            content={
+                "status": "loading",
+                "service": "EV-Charging-Backend",
+                "version": "2.0.0",
+                "message": "Model is pre-loading in background",
+            },
+        )
     
     if model_state.error_message:
         return {
@@ -95,6 +98,23 @@ async def health_check():
         "service": "EV-Charging-Backend",
         "version": "2.0.0",
         "model_loaded": model_state.is_loaded,
+    }
+
+
+@app.get("/api/model/status")
+async def model_status():
+    """Detailed model status for debugging"""
+    bundle_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "model_bundle.joblib")
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    csv_files = [f for f in os.listdir(data_dir) if f.endswith('.csv')] if os.path.isdir(data_dir) else []
+    
+    return {
+        "model_file_exists": os.path.isfile(bundle_path),
+        "model_loaded_in_memory": model_state.is_loaded,
+        "is_loading": model_state.is_loading,
+        "error": model_state.error_message,
+        "training_data_files": csv_files,
+        "training_data_count": len(csv_files),
     }
 
 
@@ -581,7 +601,11 @@ async def startup_event():
 
 
 def load_model_background():
-    """Load model in background thread without blocking event loop or startup."""
+    """Load model in background thread without blocking event loop or startup.
+    
+    Auto-generates synthetic training data if no model or CSV data exists.
+    This ensures the app always boots successfully on Render.
+    """
     model_state.is_loading = True
     try:
         from ml.predictor import load_model
@@ -593,6 +617,7 @@ def load_model_background():
         model_state.is_loading = False
         model_state.error_message = str(e)
         logger.warning(f"⚠️ Background: Model pre-load warning: {e}")
+        logger.info("ℹ️ Predictions will use fallback estimator until model is available")
 
 
 @app.on_event("shutdown")
