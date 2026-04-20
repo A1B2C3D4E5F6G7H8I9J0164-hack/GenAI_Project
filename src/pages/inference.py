@@ -1,6 +1,7 @@
 """Tab 1: Real-time Inference"""
 
 import sys
+import math
 from pathlib import Path
 
 # Setup path to find src modules
@@ -18,9 +19,21 @@ from src.processing import format_number, calculate_statistics
 from src.components import section_header, metric_card, line_chart, alert_box
 from src.config import DEMAND_WARNING_THRESHOLD, DEMAND_ALERT_THRESHOLD
 
+def calculate_cyclical_features(hour, day_of_week):
+    """Calculate sin/cos encodings for hour and day of week."""
+    # Hour: 0-23 -> 0-2pi
+    hour_sin = math.sin(2 * math.pi * hour / 24)
+    hour_cos = math.cos(2 * math.pi * hour / 24)
+    
+    # Day of week: 0-6 -> 0-2pi
+    dow_sin = math.sin(2 * math.pi * day_of_week / 7)
+    dow_cos = math.cos(2 * math.pi * day_of_week / 7)
+    
+    return hour_sin, hour_cos, dow_sin, dow_cos
+
 def show():
     """Display inference tab."""
-    st.header("⚡ Real-time Inference")
+    st.header("Real-time Inference")
     
     section_header("Manual Prediction")
     
@@ -34,9 +47,11 @@ def show():
                                             "Thursday", "Friday", "Saturday", "Sunday"])
     
     with col3:
-        demand_lag = st.number_input("Previous Demand (kW)", min_value=0.0, value=100.0)
+        demand_lag_1 = st.number_input("Previous Hour Demand (kW)", min_value=0.0, value=100.0)
     
-    if st.button("🔮 Predict", key="inference_btn"):
+    demand_lag_2 = st.number_input("Two Hours Ago Demand (kW)", min_value=0.0, value=95.0)
+    
+    if st.button("Predict", key="inference_btn"):
         with st.spinner("Generating prediction..."):
             try:
                 if predictor is None:
@@ -47,7 +62,11 @@ def show():
                           "Friday": 4, "Saturday": 5, "Sunday": 6}
                 day_num = day_map[day]
                 
-                features = np.array([[hour, day_num, demand_lag, 0, 0]])
+                # Calculate cyclical features
+                hour_sin, hour_cos, dow_sin, dow_cos = calculate_cyclical_features(hour, day_num)
+                
+                # Create feature vector [Hour, DayOfWeek, hour_sin, hour_cos, dow_sin, dow_cos, Demand_Lag_1, Demand_Lag_2]
+                features = np.array([[hour, day_num, hour_sin, hour_cos, dow_sin, dow_cos, demand_lag_1, demand_lag_2]])
                 prediction = predictor.predict(features)[0]
                 
                 col1, col2, col3 = st.columns(3)
@@ -56,11 +75,11 @@ def show():
                 
                 with col2:
                     if prediction >= DEMAND_ALERT_THRESHOLD:
-                        status = "🔴 Alert"
+                        status = "ALERT"
                     elif prediction >= DEMAND_WARNING_THRESHOLD:
-                        status = "🟡 Warning"
+                        status = "WARNING"
                     else:
-                        status = "🟢 Normal"
+                        status = "NORMAL"
                     st.metric("Status", status)
                 
                 with col3:
@@ -71,7 +90,8 @@ def show():
                 forecasts = []
                 
                 for h in hours:
-                    features = np.array([[h, day_num, prediction, 0, 0]])
+                    h_sin, h_cos, d_sin, d_cos = calculate_cyclical_features(h, day_num)
+                    features = np.array([[h, day_num, h_sin, h_cos, d_sin, d_cos, prediction, demand_lag_1]])
                     forecast = predictor.predict(features)[0]
                     forecasts.append(forecast)
                 

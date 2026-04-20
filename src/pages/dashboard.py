@@ -18,7 +18,7 @@ from src.components import section_header, alert_box
 
 def show():
     """Display operations dashboard tab."""
-    st.header("📈 Operations Dashboard")
+    st.header("Operations Dashboard")
     
     section_header("System Health")
     
@@ -74,11 +74,11 @@ def show():
     if alerts:
         for alert in alerts:
             if alert['type'] == 'warning':
-                st.warning(f"⚠️ {alert['message']}")
+                st.warning(f"Warning: {alert['message']}")
             else:
-                st.info(f"ℹ️ {alert['message']}")
+                st.info(f"Info: {alert['message']}")
     else:
-        st.success("✅ No active alerts")
+        st.success("No active alerts")
     
     section_header("Performance Metrics")
     

@@ -1,6 +1,7 @@
 """Tab 2: Batch Analysis"""
 
 import sys
+import math
 from pathlib import Path
 
 # Setup path to find src modules
@@ -10,14 +11,23 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 from src.models import predictor
 from src.processing import preprocess_data, aggregate_hourly, calculate_statistics, format_number
 from src.components import section_header, data_table, line_chart, alert_box
 
+def calculate_cyclical_features(hour, day_of_week):
+    """Calculate sin/cos encodings for hour and day of week."""
+    hour_sin = math.sin(2 * math.pi * hour / 24)
+    hour_cos = math.cos(2 * math.pi * hour / 24)
+    dow_sin = math.sin(2 * math.pi * day_of_week / 7)
+    dow_cos = math.cos(2 * math.pi * day_of_week / 7)
+    return hour_sin, hour_cos, dow_sin, dow_cos
+
 def show():
     """Display batch analysis tab."""
-    st.header("📊 Batch Analysis")
+    st.header("Batch Analysis")
     
     section_header("Upload CSV File")
     
@@ -26,15 +36,15 @@ def show():
     if uploaded_file is not None:
         try:
             df = pd.read_csv(uploaded_file)
-            st.success("✅ File loaded successfully")
+            st.success("File loaded successfully")
             
             section_header("Data Preview")
-            st.write(f"Shape: {df.shape[0]} rows × {df.shape[1]} columns")
+            st.write(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
             data_table(df.head(), "Raw Data Sample")
             
             section_header("Preprocessing")
             df = preprocess_data(df)
-            st.success("✅ Data preprocessed")
+            st.success("Data preprocessed")
             
             section_header("Summary Statistics")
             if 'EV Charging Demand (kW)' in df.columns:
@@ -61,10 +71,27 @@ def show():
                 alert_box("Model not loaded", "error")
                 return
             
-            if st.button("🔮 Generate Predictions"):
+            if st.button("Generate Predictions"):
                 with st.spinner("Generating predictions..."):
                     try:
-                        features = df[['Hour', 'DayOfWeek', 'Demand_Lag_1', 'Demand_Lag_2', 'Rolling_Avg_3h']].fillna(0)
+                        # Get required features
+                        required_cols = ['Hour', 'DayOfWeek', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos', 'Demand_Lag_1', 'Demand_Lag_2']
+                        
+                        # Check if we have the features, if not compute them
+                        if 'hour_sin' not in df.columns:
+                            for idx, row in df.iterrows():
+                                h_sin, h_cos, d_sin, d_cos = calculate_cyclical_features(row['Hour'], row['DayOfWeek'])
+                                df.at[idx, 'hour_sin'] = h_sin
+                                df.at[idx, 'hour_cos'] = h_cos
+                                df.at[idx, 'dow_sin'] = d_sin
+                                df.at[idx, 'dow_cos'] = d_cos
+                        
+                        # Fill missing values
+                        for col in required_cols:
+                            if col not in df.columns:
+                                df[col] = 0.0
+                        
+                        features = df[required_cols].fillna(0)
                         predictions = predictor.predict(features)
                         df['Prediction'] = predictions
                         
@@ -74,9 +101,9 @@ def show():
                         with col2:
                             st.metric("Max Error", f"{(df['EV Charging Demand (kW)'] - df['Prediction']).abs().max():.2f} kW")
                         
-                        st.success("✅ Predictions generated")
+                        st.success("Predictions generated successfully")
                         csv = df.to_csv(index=False)
-                        st.download_button(label="📥 Download Results (CSV)", data=csv, file_name="batch_predictions.csv", mime="text/csv")
+                        st.download_button(label="Download Results (CSV)", data=csv, file_name="batch_predictions.csv", mime="text/csv")
                     except Exception as e:
                         alert_box(f"Prediction error: {str(e)}", "error")
         except Exception as e:

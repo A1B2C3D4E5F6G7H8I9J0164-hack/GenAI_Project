@@ -16,7 +16,7 @@ from src.components import section_header, alert_box
 
 def show():
     """Display agent planning tab."""
-    st.header("🤖 Agent Planning")
+    st.header("Agent Planning")
     
     if agent_runner is None:
         alert_box("Agent system not available", "warning")
@@ -34,14 +34,14 @@ def show():
     
     query = st.text_area("Planning Query", value="What are the optimal charging patterns for tomorrow?", height=100)
     
-    if st.button("🔄 Generate Plan", key="planning_btn"):
+    if st.button("Generate Plan", key="planning_btn"):
         with st.spinner("Agent analyzing..."):
             try:
                 context = {'location': location, 'horizon': time_horizon, 'query': query}
                 result = agent_runner(context)
                 
                 if result:
-                    st.success("✅ Planning complete")
+                    st.success("Planning complete")
                     section_header("Generated Plan")
                     if isinstance(result, dict):
                         st.json(result)
@@ -50,12 +50,12 @@ def show():
                     
                     section_header("Key Recommendations")
                     recommendations = [
-                        "✓ Increase capacity during peak hours (3-6 PM)",
-                        "✓ Schedule maintenance during low demand (11 PM - 6 AM)",
-                        "✓ Monitor Grid load for potential bottlenecks"
+                        "Increase capacity during peak hours (3-6 PM)",
+                        "Schedule maintenance during low demand (11 PM - 6 AM)",
+                        "Monitor Grid load for potential bottlenecks"
                     ]
                     for rec in recommendations:
-                        st.write(rec)
+                        st.write(f"• {rec}")
                 else:
                     alert_box("No plan generated", "warning")
             except Exception as e:
