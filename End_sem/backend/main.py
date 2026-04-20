@@ -541,10 +541,23 @@ async def general_exception_handler(request, exc):
 @app.on_event("startup")
 async def startup_event():
     """
-    Minimal startup - server binds to port immediately.
-    Models are loaded on-demand during first request.
+    Fast startup - server binds to port immediately.
+    Models load on-demand with proper error handling.
     """
-    logger.info("✅ Backend startup complete - Server ready to accept requests")
+    logger.info("=" * 60)
+    logger.info("🚀 BACKEND STARTUP")
+    logger.info("=" * 60)
+    
+    try:
+        logger.info("✅ FastAPI app initialized")
+        logger.info("✅ CORS middleware configured")
+        logger.info("✅ Routes registered")
+        logger.info("✅ Server ready to accept requests")
+        logger.info("⏳ Models will load on first request")
+    except Exception as e:
+        logger.error(f"❌ Startup error: {str(e)}", exc_info=True)
+    
+    logger.info("=" * 60)
 
 
 @app.on_event("shutdown")
