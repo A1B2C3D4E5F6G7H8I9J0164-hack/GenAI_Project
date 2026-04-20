@@ -167,7 +167,11 @@ const Dashboard = () => {
     );
   }
 
-  const { summary, hourly_demand, price_vs_demand, day_of_week } = data;
+  // Safely extract data with fallbacks
+  const summary = data?.summary || { avg_demand: 0, max_demand: 0, total_records: 0 };
+  const hourly_demand = data?.hourly_demand || [];
+  const price_vs_demand = data?.price_vs_demand || [];
+  const day_of_week = data?.day_of_week || [];
 
   return (
     <PageMotion className="space-y-6 sm:space-y-8 page-transition">
