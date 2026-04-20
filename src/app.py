@@ -799,13 +799,14 @@ with tab3:
         if st.checkbox("🔧 Show Full Agent State (Advanced)"):
             with st.expander("Raw Agent Response", expanded=False):
                 st.json(result)
-else:
-    st.markdown("""
-    <div style="text-align: center; padding: 3rem 1rem;">
-        <p style="color: #a0aec0; font-size: 1.1rem; margin-bottom: 1rem;">🧠 AI-Powered Analysis Ready</p>
-        <p style="color: #64748b; font-size: 0.95rem;">Upload your charging station data to generate intelligent infrastructure recommendations based on advanced reasoning patterns</p>
-    </div>
-    """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="text-align: center; padding: 3rem 1rem;">
+            <p style="color: #a0aec0; font-size: 1.1rem; margin-bottom: 1rem;">🧠 AI-Powered Analysis Ready</p>
+            <p style="color: #64748b; font-size: 0.95rem;">Upload your charging station data to generate intelligent infrastructure recommendations based on advanced reasoning patterns</p>
+        </div>
+        """, unsafe_allow_html=True)
+
 
 
 # ==========================================
