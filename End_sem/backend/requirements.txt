@@ -1,3 +1,5 @@
+--index-url https://download.pytorch.org/whl/cpu
+
 fastapi
 uvicorn[standard]
 python-dotenv
@@ -18,4 +20,5 @@ langgraph
 sentence-transformers
 faiss-cpu
 python-multipart
-torch --index-url https://download.pytorch.org/whl/cpu
+torch
+transformers
