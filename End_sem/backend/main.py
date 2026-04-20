@@ -24,6 +24,17 @@ logger = logging.getLogger(__name__)
 # Setup Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# ──────────────────────────────────────
+# Global Model State
+# ──────────────────────────────────────
+class ModelState:
+    """Track whether the model is loaded and ready"""
+    is_loaded = False
+    is_loading = False
+    error_message = None
+
+model_state = ModelState()
+
 app = FastAPI(
     title="EV Charging Demand Prediction API",
     description="Intelligent forecasting and infrastructure planning for EV charging networks",
@@ -61,11 +72,29 @@ app.add_middleware(
 
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint"""
+    """Health check endpoint with model loading status"""
+    if model_state.is_loading:
+        return {
+            "status": "loading",
+            "service": "EV-Charging-Backend",
+            "version": "2.0.0",
+            "message": "Model is pre-loading in background",
+        }, 202  # Accepted - still loading
+    
+    if model_state.error_message:
+        return {
+            "status": "degraded",
+            "service": "EV-Charging-Backend",
+            "version": "2.0.0",
+            "message": f"Model loading error: {model_state.error_message}",
+            "using_fallback": True,
+        }
+    
     return {
-        "status": "healthy",
+        "status": "healthy" if model_state.is_loaded else "ready",
         "service": "EV-Charging-Backend",
         "version": "2.0.0",
+        "model_loaded": model_state.is_loaded,
     }
 
 
@@ -567,12 +596,17 @@ async def startup_event():
 
 async def load_model_background():
     """Load model in background without blocking server startup."""
+    model_state.is_loading = True
     try:
         logger.info("🔄 Background: Pre-loading model cache...")
         from ml.predictor import load_model
         load_model()
+        model_state.is_loaded = True
+        model_state.is_loading = False
         logger.info("✅ Background: Model cache pre-loaded successfully")
     except Exception as e:
+        model_state.is_loading = False
+        model_state.error_message = str(e)
         logger.warning(f"⚠️ Background: Model pre-load warning: {e}")
         logger.info("✅ Will use fallback predictor on first request")
 
