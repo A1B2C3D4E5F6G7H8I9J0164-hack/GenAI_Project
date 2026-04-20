@@ -541,8 +541,8 @@ async def general_exception_handler(request, exc):
 @app.on_event("startup")
 async def startup_event():
     """
-    Startup with model pre-loading to avoid timeout on first batch request.
-    Pre-loading happens in background during server startup.
+    Fast startup - server binds to port immediately.
+    Model loads asynchronously in background.
     """
     logger.info("=" * 60)
     logger.info("🚀 BACKEND STARTUP")
@@ -553,21 +553,28 @@ async def startup_event():
         logger.info("✅ CORS middleware configured")
         logger.info("✅ Routes registered")
         logger.info("✅ Server ready to accept requests")
-        logger.info("⏳ Pre-loading model cache...")
+        logger.info("⏳ Model will pre-load in background...")
         
-        # Pre-load model to avoid timeout on first batch request
-        from ml.predictor import load_model
-        try:
-            load_model()
-            logger.info("✅ Model cache pre-loaded successfully")
-        except Exception as model_err:
-            logger.warning(f"⚠️ Model pre-load warning: {model_err}")
-            logger.info("✅ Will use fallback predictor on first request")
-            
+        # Start background model loading (non-blocking)
+        import asyncio
+        asyncio.create_task(load_model_background())
+        
     except Exception as e:
         logger.error(f"❌ Startup error: {str(e)}", exc_info=True)
     
     logger.info("=" * 60)
+
+
+async def load_model_background():
+    """Load model in background without blocking server startup."""
+    try:
+        logger.info("🔄 Background: Pre-loading model cache...")
+        from ml.predictor import load_model
+        load_model()
+        logger.info("✅ Background: Model cache pre-loaded successfully")
+    except Exception as e:
+        logger.warning(f"⚠️ Background: Model pre-load warning: {e}")
+        logger.info("✅ Will use fallback predictor on first request")
 
 
 @app.on_event("shutdown")
