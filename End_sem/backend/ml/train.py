@@ -68,21 +68,21 @@ def train_and_save_bundle(base_dir: str, force_refresh_data: bool = False) -> Di
     X_te_e = scaler_eval.transform(X_test_df)
 
     hgb_e = HistGradientBoostingRegressor(
-        max_iter=280,
-        max_depth=12,
-        learning_rate=0.06,
+        max_iter=75,
+        max_depth=8,
+        learning_rate=0.1,
         l2_regularization=0.12,
         min_samples_leaf=20,
         early_stopping=True,
         validation_fraction=0.1,
-        n_iter_no_change=25,
+        n_iter_no_change=10,
         random_state=42,
     )
     hgb_e.fit(X_tr_e, y_train)
     gbr_e = GradientBoostingRegressor(
-        n_estimators=280,
-        max_depth=6,
-        learning_rate=0.06,
+        n_estimators=50,
+        max_depth=5,
+        learning_rate=0.1,
         subsample=0.85,
         max_features="sqrt",
         random_state=42,
@@ -108,29 +108,29 @@ def train_and_save_bundle(base_dir: str, force_refresh_data: bool = False) -> Di
     X_all_s = scaler.fit_transform(X)
 
     hgb = HistGradientBoostingRegressor(
-        max_iter=500,
-        max_depth=14,
-        learning_rate=0.05,
+        max_iter=100,
+        max_depth=10,
+        learning_rate=0.08,
         l2_regularization=0.1,
         min_samples_leaf=12,
         early_stopping=True,
         validation_fraction=0.1,
-        n_iter_no_change=35,
+        n_iter_no_change=15,
         random_state=42,
     )
     hgb.fit(X_all_s, y)
 
     gbr = GradientBoostingRegressor(
-        n_estimators=500,
-        max_depth=7,
-        learning_rate=0.05,
+        n_estimators=75,
+        max_depth=6,
+        learning_rate=0.08,
         subsample=0.88,
         max_features="sqrt",
         random_state=42,
     )
     gbr.fit(X_all_s, y)
 
-    ensemble = WeightedEnsemble([hgb, gbr], weights=[0.52, 0.48])
+    ensemble = WeightedEnsemble([hgb, gbr], weights=[0.60, 0.40])
 
     y_all_hat = ensemble.predict(X_all_s)
     metrics["full_fit_r2"] = float(r2_score(y, y_all_hat))

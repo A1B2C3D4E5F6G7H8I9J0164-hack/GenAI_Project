@@ -35,13 +35,33 @@ def ensure_model_ready():
     except ImportError:
         pass
 
-    # Fast path: model already exists
+    # Fast path: model already exists AND is compatible with this environment
     if os.path.isfile(bundle_path):
-        size_mb = os.path.getsize(bundle_path) / (1024 * 1024)
-        print(f"✅ Model bundle exists: {bundle_path} ({size_mb:.1f} MB)")
-        return True
+        print(f"🔎 Found existing model bundle: {bundle_path}")
+        try:
+            import joblib
+            _ = joblib.load(bundle_path)
+            size_mb = os.path.getsize(bundle_path) / (1024 * 1024)
+            print(f"✅ Model bundle is compatible and ready ({size_mb:.1f} MB)")
+            return True
+        except AttributeError as e:
+            if "sklearn" in str(e) or "__pyx_unpickle" in str(e):
+                print(f"⚠️ Existing model is incompatible with this environment: {e}")
+                print("🗑️ Deleting incompatible model to force retraining...")
+                try:
+                    os.remove(bundle_path)
+                except OSError:
+                    pass
+            else:
+                print(f"⚠️ Unexpected AttributeError loading model: {e}")
+        except Exception as e:
+            print(f"⚠️ Error loading existing model: {e}")
+            try:
+                os.remove(bundle_path)
+            except OSError:
+                pass
 
-    print("⚠️  Model bundle not found. Attempting to create...")
+    print("⚠️  Model bundle not found or incompatible. Attempting to create...")
 
     # Check for training data
     import glob
