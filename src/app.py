@@ -4,6 +4,12 @@ Main Streamlit application entry point.
 Organizes tabs for inference, batch analysis, planning, and dashboard.
 """
 
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+
 import streamlit as st
 from utils import apply_terminal_theme
 from styles import MAIN_STYLES
