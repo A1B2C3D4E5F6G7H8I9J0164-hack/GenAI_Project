@@ -2,12 +2,17 @@
 
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Setup path BEFORE imports
+SRC_DIR = Path(__file__).parent.parent.absolute()
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 import streamlit as st
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
+
 from models import predictor
 from processing import format_number, calculate_statistics
 from components import section_header, metric_card, line_chart, alert_box

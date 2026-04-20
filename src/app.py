@@ -5,18 +5,26 @@ Organizes tabs for inference, batch analysis, planning, and dashboard.
 """
 
 import sys
+import os
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
+# CRITICAL: Setup path BEFORE any imports from local modules
+# Get absolute path to src directory
+SRC_DIR = Path(__file__).parent.absolute()
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 import streamlit as st
-from utils import apply_terminal_theme
-from styles import MAIN_STYLES
-from config import PAGE_CONFIG
 
-# Pages imports
-from pages import inference, batch, planning, dashboard
+# Now import local modules
+try:
+    from utils import apply_terminal_theme
+    from styles import MAIN_STYLES
+    from config import PAGE_CONFIG
+    from pages import inference, batch, planning, dashboard
+except ImportError as e:
+    st.error(f"Import Error: {e}\nSys Path: {sys.path}")
+    st.stop()
 
 def main():
     """Main application."""
