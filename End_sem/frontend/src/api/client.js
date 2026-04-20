@@ -10,11 +10,22 @@ if (API_URL && !API_URL.endsWith('/api')) {
 
 console.log('[API Client] Using base URL:', API_URL);
 
+// Standard client with 30 second timeout
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000,
+});
+
+// Batch client with 3 minute timeout (batch operations can be slow)
+const batchClient = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 180000,
 });
 
 export const predictSingle = async (data) => {
@@ -26,7 +37,7 @@ export const processBatch = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
   
-  const response = await apiClient.post('/batch', formData, {
+  const response = await batchClient.post('/batch', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
