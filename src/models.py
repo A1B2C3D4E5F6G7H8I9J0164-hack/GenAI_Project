@@ -17,16 +17,27 @@ from src.config import MODEL_PATHS
 def load_model():
     """Load pre-trained Random Forest model for EV demand prediction."""
     try:
+        found_path = None
         for path in MODEL_PATHS:
             model_path = Path(path)
             if model_path.exists():
-                return joblib.load(model_path)
+                found_path = model_path
+                st.info(f"Loading model from: {model_path}")
+                break
         
-        st.warning("⚠ Model file not found - predictions unavailable")
-        return None
+        if found_path is None:
+            st.error(f"Model file not found at: {[str(p) for p in MODEL_PATHS]}")
+            return None
+        
+        # Load with explicit error handling
+        model = joblib.load(str(found_path))
+        st.success(f"✓ Model loaded successfully")
+        return model
         
     except Exception as e:
-        st.error(f"❌ Model Loading Error: {str(e)}")
+        st.error(f"Model Loading Error: {str(e)}")
+        import traceback
+        st.error(f"Details: {traceback.format_exc()}")
         return None
 
 @st.cache_resource

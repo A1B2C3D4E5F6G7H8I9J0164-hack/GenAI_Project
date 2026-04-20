@@ -27,6 +27,7 @@ PAGE_CONFIG = {
 
 # Model paths to try
 MODEL_PATHS = [
+    BACKEND_PATH / 'models' / 'model_bundle.joblib',  # Actual model location
     'models/ev_demand_timeseries.pkl',
     'src/models/ev_demand_timeseries.pkl',
     MODELS_PATH / 'ev_demand_timeseries.pkl',
