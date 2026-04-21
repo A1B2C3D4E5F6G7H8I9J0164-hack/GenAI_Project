@@ -9,7 +9,17 @@ from utils import apply_terminal_theme, print_terminal_log
 import sys
 import os
 import json
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from pathlib import Path
+
+# Setup path for imports
+PROJECT_ROOT = Path(__file__).parent.parent.absolute()
+BACKEND_PATH = PROJECT_ROOT / "End_sem" / "backend"
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+if str(BACKEND_PATH) not in sys.path:
+    sys.path.insert(0, str(BACKEND_PATH))
+
 try:
     from agent.run_agent import run_planning_agent
 except Exception as e:
@@ -19,22 +29,78 @@ except Exception as e:
 st.set_page_config(page_title="NEURAL GRID | EV FORECAST", layout="wide")
 apply_terminal_theme()
 
+# Model predictor wrapper class
+class ModelPredictor:
+    """Wrapper around the model bundle that handles feature engineering."""
+    
+    def __init__(self, estimator, feature_columns, defaults):
+        self.estimator = estimator
+        self.feature_columns = feature_columns
+        self.defaults = defaults
+    
+    def predict(self, features_dict_or_array):
+        """Predict on input features, filling missing with defaults."""
+        # Handle numpy array input
+        if isinstance(features_dict_or_array, np.ndarray):
+            if features_dict_or_array.ndim == 1:
+                features_dict_or_array = features_dict_or_array.reshape(1, -1)
+            
+            # If we have exactly the right number of features, use directly
+            if features_dict_or_array.shape[1] == len(self.feature_columns):
+                return self.estimator.predict(features_dict_or_array)
+            
+            # Otherwise pad with defaults
+            df_input = pd.DataFrame(features_dict_or_array)
+        else:
+            # Handle dict input
+            df_input = pd.DataFrame([features_dict_or_array] if isinstance(features_dict_or_array, dict) 
+                                    else features_dict_or_array)
+        
+        # Ensure all required features exist with defaults
+        for col in self.feature_columns:
+            if col not in df_input.columns:
+                df_input[col] = self.defaults.get(col, 0.0)
+        
+        # Select only required features in correct order
+        X = df_input[self.feature_columns]
+        
+        # Make predictions
+        return self.estimator.predict(X)
+
 @st.cache_resource
 def load_model():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    """Load the actual model from End_sem/backend/models/model_bundle.joblib"""
     try:
-        model = joblib.load(os.path.join(base_dir, 'models', 'ev_demand_timeseries.pkl'))
-        try:
-            scaler = joblib.load(os.path.join(base_dir, 'models', 'scaler.pkl'))
-        except Exception as e:
-            st.warning(f"scaler.pkl not found! Error: {e}")
-            scaler = None
-        return model, scaler
+        model_path = BACKEND_PATH / 'models' / 'model_bundle.joblib'
+        st.info(f"Loading model from: {model_path}")
+        
+        if not model_path.exists():
+            st.error(f"Model file not found: {model_path}")
+            return None, None
+        
+        # Load model bundle
+        model_bundle = joblib.load(str(model_path))
+        st.success("✓ Model loaded successfully")
+        
+        # Extract components
+        estimator = model_bundle.get('estimator')
+        feature_columns = model_bundle.get('feature_columns', [])
+        defaults = model_bundle.get('defaults', {})
+        
+        if not estimator or not feature_columns:
+            st.error("Invalid model bundle - missing estimator or feature columns")
+            return None, None
+        
+        # Return wrapped predictor
+        return ModelPredictor(estimator, feature_columns, defaults), None
+        
     except Exception as e:
-        st.error(f"Prediction model not found: {e}")
+        st.error(f"Model Loading Error: {str(e)}")
+        import traceback
+        st.error(f"Details: {traceback.format_exc()}")
         return None, None
 
-predictor, scaler = load_model()
+predictor, _ = load_model()  # Scaler is not used with ModelPredictor
 
 def preprocess_data(df_raw):
     """
@@ -108,18 +174,38 @@ with tab1:
         evc = st.number_input("EV Count", value=5)
 
         if st.button("RUN INFERENCE"):
-            if predictor and scaler:
-                # Calculate interactions intrinsically
-                price_hour = pr * h
-                price_ev = pr * evc
+            if predictor:
+                import math
+                # Calculate cyclical features
+                hour_sin = math.sin(2 * math.pi * h / 24)
+                hour_cos = math.cos(2 * math.pi * h / 24)
+                dow_sin = math.sin(2 * math.pi * d / 7)
+                dow_cos = math.cos(2 * math.pi * d / 7)
                 
-                # Feature order must exactly match training
-                features = np.array([[h, d, l1, l2, r3, pr, stb, evc]], dtype=float)
-                features_scaled = scaler.transform(features)
-                prediction = predictor.predict(features_scaled)[0]
+                # Build feature dict - ModelPredictor fills in missing with defaults
+                features_dict = {
+                    'Hour': h,
+                    'DayOfWeek': d,
+                    'hour_sin': hour_sin,
+                    'hour_cos': hour_cos,
+                    'dow_sin': dow_sin,
+                    'dow_cos': dow_cos,
+                    'Demand_Lag_1': l1,
+                    'Demand_Lag_2': l2,
+                    'Demand_Lag_3': l3,
+                    'Rolling_Avg_3h': r3,
+                    'Rolling_Avg_6h': r6,
+                    'Rolling_Std_3h': rst3,
+                    'Electricity Price ($/kWh)': pr,
+                    'Grid Stability Index': stb,
+                    'Number of EVs Charging': evc,
+                    'Price_Hour_Interact': pr * h,
+                    'Price_EV_Interact': pr * evc,
+                }
+                prediction = predictor.predict(features_dict)[0]
                 st.metric("PREDICTED LOAD", f"{prediction:.4f} kW")
             else:
-                st.error("Model Error: Serialization or Scaler file not detected in root.")
+                st.error("Model Error: Model failed to load. Check logs above.")
 
     with col_viz:
         x = np.linspace(0, 23, 100)
@@ -135,7 +221,7 @@ with tab2:
     st.write("Upload a raw station file (e.g., Charging station_C__Calif.csv)")
     uploaded_file = st.file_uploader("Select CSV or Excel", type=["csv", "xlsx"])
     
-    if uploaded_file and predictor and scaler:
+    if uploaded_file and predictor:
         raw_data = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
         print_terminal_log("Raw stream detected. Commencing feature engineering...")
         
@@ -143,17 +229,18 @@ with tab2:
             processed_df = preprocess_data(raw_data)
             
             if processed_df is not None:
-                # The exact list of features the model was trained on
-                model_features = [
-                    'Hour', 'DayOfWeek', 'Demand_Lag_1', 'Demand_Lag_2',
-                    'Rolling_Avg_3h', 'Electricity Price ($/kWh)', 
-                    'Grid Stability Index', 'Number of EVs Charging'
-                ]
+                import math
                 
-                # Apply scaler safely and strictly map types
-                X = processed_df[model_features].astype(float)
-                X_scaled = scaler.transform(X)
-                processed_df['AI_Predicted_Demand_kW'] = predictor.predict(X_scaled)
+                # Add cyclical features if missing
+                if 'hour_sin' not in processed_df.columns:
+                    processed_df['hour_sin'] = processed_df['Hour'].apply(lambda h: math.sin(2 * math.pi * h / 24))
+                    processed_df['hour_cos'] = processed_df['Hour'].apply(lambda h: math.cos(2 * math.pi * h / 24))
+                    processed_df['dow_sin'] = processed_df['DayOfWeek'].apply(lambda d: math.sin(2 * math.pi * d / 7))
+                    processed_df['dow_cos'] = processed_df['DayOfWeek'].apply(lambda d: math.cos(2 * math.pi * d / 7))
+                
+                # ModelPredictor handles feature padding automatically
+                predictions = predictor.predict(processed_df)
+                processed_df['AI_Predicted_Demand_kW'] = predictions
                 
                 # ADD DEBUG VALIDATION 
                 y_true = processed_df['EV Charging Demand (kW)']
