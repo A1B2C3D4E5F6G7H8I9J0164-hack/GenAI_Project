@@ -18,7 +18,6 @@ import { PageMotion } from '../components/PageMotion';
 import { chartTooltipProps } from '../lib/chartTheme';
 import { cn } from '../lib/utils';
 import { useDataContext } from '../App';
-import { noop } from 'recharts/types/util/DataUtils';
 
 const BatchProcess = () => {
   const { setDataUploaded } = useDataContext();
@@ -166,7 +165,7 @@ const BatchProcess = () => {
                 <>
                   <StatCard
                     title="R-squared"
-                    value={`${random()`}
+                    value={`${Math.abs((result.r2_score * 100).toFixed(1))}%`}
                     color="green"
                   />
                   {result.mae !== undefined && (
