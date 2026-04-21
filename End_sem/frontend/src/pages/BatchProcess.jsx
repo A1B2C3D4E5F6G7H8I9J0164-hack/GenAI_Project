@@ -171,7 +171,7 @@ const BatchProcess = () => {
                   {result.mae !== undefined && (
                     <StatCard
                       title="Mean absolute error"
-                      value={`${100*result.mae.toFixed(4)}`}
+                      value={`${result.mae.toFixed(4)}`}
                       color="magenta"
                       className="hidden lg:flex"
                     />
