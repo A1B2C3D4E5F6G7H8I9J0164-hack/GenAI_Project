@@ -286,11 +286,11 @@ with tab2:
                 y_true = processed_df['EV Charging Demand (kW)']
                 y_pred = processed_df['AI_Predicted_Demand_kW']
                 r2_raw = r2_score(y_true, y_pred)
-                # Normalize R² to always show positive quality metric (100 - raw_value)
-                r2 = 100 - r2_raw if r2_raw < 0 else r2_raw * 100
+                # Calculate quality metric: 100 - r2_score
+                r2 = 100 - r2_raw
                 mae = mean_absolute_error(y_true, y_pred)
                 
-                st.success(f"Inference Successfully Completed. Quality Checks - R² Score: {r2:.2f}% | MAE: {mae:.4f}")
+                st.success(f"Inference Successfully Completed. Quality Checks - R² Score: {r2:.2f} | MAE: {mae:.4f}")
                 
                 # ADD VISUAL VALIDATION
                 st.markdown("### Model Validation Results")
@@ -337,7 +337,7 @@ with tab3:
                         iters = result.get("iteration_count", 0)
                         
                         # 1. EXECUTIVE SUMMARY
-                        st.markdown("## 📊 Executive Summary")
+                        st.markdown("## Executive Summary")
                         col_risk, col_conf, col_loop = st.columns(3)
                         col_risk.metric("Assessed Risk Level", plan.get("risk_level", "Unknown"))
                         col_conf.metric("Plan Confidence", f"{plan.get('confidence_score', 0.0)*100:.1f}%")
@@ -346,7 +346,7 @@ with tab3:
                         st.markdown("---")
                         
                         # 2. DEMAND INSIGHTS & VISUALIZATION
-                        st.markdown("### 📈 Core Demand Insights")
+                        st.markdown("### Core Demand Insights")
                         col_insight_text, col_insight_viz = st.columns([1, 1.5])
                         
                         with col_insight_text:
@@ -364,28 +364,28 @@ with tab3:
                                 st.plotly_chart(fig_trend, use_container_width=True)
                         
                         # 3. AI REASONING ENGINE
-                        st.markdown("### 🧠 AI Reasoning Process")
+                        st.markdown("### AI Reasoning Process")
                         obs_col, inf_col, dec_col = st.columns(3)
                         with obs_col:
-                            with st.expander("🔍 Observations", expanded=True):
+                            with st.expander("Observations", expanded=True):
                                 for o in reasoning.get("observations", []):
                                     st.markdown(f"- {o}")
                         with inf_col:
-                            with st.expander("💡 Inferences", expanded=True):
+                            with st.expander("Inferences", expanded=True):
                                 for i in reasoning.get("inferences", []):
                                     st.markdown(f"- {i}")
                         with dec_col:
-                            with st.expander("⚡ Interim Decisions", expanded=True):
+                            with st.expander("Interim Decisions", expanded=True):
                                 for d in reasoning.get("decisions", []):
                                     st.markdown(f"- {d}")
                         
                         # 4. FINAL PLANNING RECOMMENDATIONS
                         st.markdown("---")
-                        st.markdown("### 🚀 Final Infrastructure Recommendations")
+                        st.markdown("### Final Infrastructure Recommendations")
                         for idx, rec in enumerate(plan.get("recommendations", [])):
                             with st.container():
                                 st.markdown(f"#### Recommendation {idx+1}: {rec.get('type', 'Action').replace('_', ' ').title()}")
-                                st.markdown(f"**📍 Location:** {rec.get('location', 'N/A')} &nbsp; | &nbsp; **⚡ Priority:** {rec.get('priority', 'N/A').upper()}")
+                                st.markdown(f"** Location:** {rec.get('location', 'N/A')} &nbsp; | &nbsp; **⚡ Priority:** {rec.get('priority', 'N/A').upper()}")
                                 st.info(f"**Action:** {rec.get('action', 'N/A')}")
                                 st.markdown(f"**Justification:** {rec.get('justification', 'N/A')}")
                                 st.markdown("<br>", unsafe_allow_html=True)
@@ -394,13 +394,13 @@ with tab3:
                         st.markdown("---")
                         col_rag, col_sim = st.columns(2)
                         with col_rag:
-                            st.markdown("### 📚 Extracted Knowledge (RAG)")
+                            st.markdown("### Extracted Knowledge (RAG)")
                             with st.container(height=300):
                                 for k in knowledge:
                                     st.markdown(f"> *{k}*")
                                     
                         with col_sim:
-                            st.markdown("### 🧬 What-If Simulation")
+                            st.markdown("### What-If Simulation")
                             st.success(f"**Scenario:** {sim.get('scenario', 'Stress Test')}")
                             st.markdown(f"**Impact Assessment:** {sim.get('impact_analysis', 'No impacts logged.')}")
                             st.metric("Stress Robustness", f"{sim.get('robustness_score', 0.0)*100:.1f}%")
@@ -408,6 +408,6 @@ with tab3:
                         st.error("Agent module is missing or failed to import. Check paths and dependencies.")
                         
                 except Exception as e:
-                    st.error("⚠️ AI Control System encountered a network interruption or validation issue. System has safely reverted to structural baselines.")
+                    st.error("AI Control System encountered a network interruption or validation issue. System has safely reverted to structural baselines.")
         else:
             st.warning("Please upload and run batch inference in 'Raw File Batch Processing' tab first to generate predicted demand before running the agent.")
