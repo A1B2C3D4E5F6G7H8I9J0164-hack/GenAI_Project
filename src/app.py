@@ -251,9 +251,9 @@ with tab1:
         x = np.linspace(0, 23, 100)
         y = 0.15 + 0.1 * np.sin((x - 6) * np.pi / 12)
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=x, y=y, fill='tozeroy', line=dict(color='#00f2ff'), name='Load Profile'))
-        fig.add_trace(go.Scatter(x=[h], y=[0.15 + 0.1 * np.sin((h - 6) * np.pi / 12)], mode='markers', marker=dict(color='red', size=12)))
-        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        fig.add_trace(go.Scatter(x=x, y=y, fill='tozeroy', line=dict(color='#00f2ff'), name='Load Profile', hovertemplate='Hour: %{x:.1f}<br>Demand: %{y:.4f} kW<extra></extra>'))
+        fig.add_trace(go.Scatter(x=[h], y=[0.15 + 0.1 * np.sin((h - 6) * np.pi / 12)], mode='markers', marker=dict(color='red', size=12), name='Current Hour', hovertemplate='Hour: %{x:.1f}<br>Demand: %{y:.4f} kW<extra></extra>'))
+        fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', hoverlabel=dict(bgcolor='rgba(0,0,0,0.85)', bordercolor='#00f2ff', font=dict(color='white', size=12)))
         st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
@@ -293,9 +293,9 @@ with tab2:
                 # ADD VISUAL VALIDATION
                 st.markdown("### Model Validation: Actual vs Predicted (First 100 Points)")
                 fig_val = go.Figure()
-                fig_val.add_trace(go.Scatter(y=y_true.head(100), mode='lines', name='Actual Observed Trend', line=dict(color='#00ff88')))
-                fig_val.add_trace(go.Scatter(y=y_pred.head(100), mode='lines', name='Model Prediction Trend', line=dict(color='#ff00ff', dash='dash')))
-                fig_val.update_layout(template="plotly_dark", height=400)
+                fig_val.add_trace(go.Scatter(y=y_true.head(100), mode='lines', name='Actual Observed Trend', line=dict(color='#00ff88'), hovertemplate='Index: %{x}<br>Actual: %{y:.4f} kW<extra></extra>'))
+                fig_val.add_trace(go.Scatter(y=y_pred.head(100), mode='lines', name='Model Prediction Trend', line=dict(color='#ff00ff', dash='dash'), hovertemplate='Index: %{x}<br>Predicted: %{y:.4f} kW<extra></extra>'))
+                fig_val.update_layout(template="plotly_dark", height=400, hoverlabel=dict(bgcolor='rgba(0,0,0,0.85)', bordercolor='#ff00ff', font=dict(color='white', size=12)))
                 st.plotly_chart(fig_val, key="val_plot", width='stretch')
                 
                 print_terminal_log("Inference complete. Generating output stream...")
@@ -357,8 +357,8 @@ with tab3:
                         with col_insight_viz:
                             if 'AI_Predicted_Demand_kW' in df_to_use.columns:
                                 fig_trend = go.Figure()
-                                fig_trend.add_trace(go.Scatter(y=df_to_use['AI_Predicted_Demand_kW'].head(150), mode='lines', fill='tozeroy', line=dict(color='#ff9900')))
-                                fig_trend.update_layout(title="Predicted Load Heat Trend", template="plotly_dark", height=250, margin=dict(l=0, r=0, t=30, b=0))
+                                fig_trend.add_trace(go.Scatter(y=df_to_use['AI_Predicted_Demand_kW'].head(150), mode='lines', fill='tozeroy', line=dict(color='#ff9900'), name='Predicted Load', hovertemplate='Hour: %{x}<br>Demand: %{y:.4f} kW<extra></extra>'))
+                                fig_trend.update_layout(title="Predicted Load Heat Trend", template="plotly_dark", height=250, margin=dict(l=0, r=0, t=30, b=0), hoverlabel=dict(bgcolor='rgba(0,0,0,0.85)', bordercolor='#ff9900', font=dict(color='white', size=12)))
                                 st.plotly_chart(fig_trend, use_container_width=True)
                         
                         # 3. AI REASONING ENGINE
