@@ -69,7 +69,10 @@ class ModelPredictor:
 
 @st.cache_resource
 def load_model():
-    """Load the actual model from End_sem/backend/models/model_bundle.joblib"""
+    """Load the actual model from End_sem/backend/models/model_bundle.joblib
+    
+    Falls back to a simple statistical model if scikit-learn version is incompatible.
+    """
     try:
         model_path = BACKEND_PATH / 'models' / 'model_bundle.joblib'
         st.info(f"Loading model from: {model_path}")
@@ -78,21 +81,58 @@ def load_model():
             st.error(f"Model file not found: {model_path}")
             return None, None
         
-        # Load model bundle
-        model_bundle = joblib.load(str(model_path))
-        st.success("✓ Model loaded successfully")
+        try:
+            # Try to load model bundle
+            model_bundle = joblib.load(str(model_path))
+            st.success("✓ Model loaded successfully")
+            
+            # Extract components
+            estimator = model_bundle.get('estimator')
+            feature_columns = model_bundle.get('feature_columns', [])
+            defaults = model_bundle.get('defaults', {})
+            
+            if not estimator or not feature_columns:
+                st.error("Invalid model bundle - missing estimator or feature columns")
+                return None, None
+            
+            # Return wrapped predictor
+            return ModelPredictor(estimator, feature_columns, defaults), None
         
-        # Extract components
-        estimator = model_bundle.get('estimator')
-        feature_columns = model_bundle.get('feature_columns', [])
-        defaults = model_bundle.get('defaults', {})
-        
-        if not estimator or not feature_columns:
-            st.error("Invalid model bundle - missing estimator or feature columns")
-            return None, None
-        
-        # Return wrapped predictor
-        return ModelPredictor(estimator, feature_columns, defaults), None
+        except (AttributeError, ImportError) as e:
+            # Handle scikit-learn version incompatibility
+            st.warning(f"⚠️ Scikit-learn version mismatch detected. Using fallback model.")
+            st.info("Cause: Model was trained with different sklearn version")
+            
+            # Create a fallback predictor with reasonable defaults
+            fallback_columns = [
+                'Hour', 'DayOfWeek', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos',
+                'Demand_Lag_1', 'Demand_Lag_2', 'Demand_Lag_3', 'Rolling_Avg_3h',
+                'Rolling_Avg_6h', 'Rolling_Std_3h', 'Electricity Price ($/kWh)',
+                'Grid Stability Index', 'Number of EVs Charging', 'Price_Hour_Interact',
+                'Price_EV_Interact', 'Solar Energy Production (kW)', 'Wind Energy Production (kW)',
+                'Charging Station Capacity (kW)', 'Peak Demand (kW)', 'Renewable Energy Usage (%)',
+                'EV Charging Efficiency (%)', 'Battery Storage (kWh)', 'Total Renewable Energy Production (kW)'
+            ]
+            
+            fallback_defaults = {col: 0.15 for col in fallback_columns}
+            fallback_defaults.update({
+                'Hour': 12.0, 'DayOfWeek': 3.0, 'Grid Stability Index': 1.0,
+                'Number of EVs Charging': 5.0, 'Renewable Energy Usage (%)': 50.0,
+                'EV Charging Efficiency (%)': 90.0, 'Charging Station Capacity (kW)': 27.6,
+            })
+            
+            # Create fallback estimator
+            class FallbackPredictor:
+                """Simple statistical fallback when real model can't load"""
+                def predict(self, X):
+                    if isinstance(X, pd.DataFrame):
+                        # Simple heuristic: base demand + hour adjustment + EV adjustment
+                        demand = 0.15 + (X.get('Hour', 12) / 24) * 0.1 + (X.get('Number of EVs Charging', 5) / 10) * 0.05
+                        return np.array(demand).flatten()
+                    else:
+                        return np.array([0.15] * len(X))
+            
+            return ModelPredictor(FallbackPredictor(), fallback_columns, fallback_defaults), None
         
     except Exception as e:
         st.error(f"Model Loading Error: {str(e)}")
