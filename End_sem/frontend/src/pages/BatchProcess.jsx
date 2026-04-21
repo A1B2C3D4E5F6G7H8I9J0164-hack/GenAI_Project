@@ -165,7 +165,7 @@ const BatchProcess = () => {
                 <>
                   <StatCard
                     title="R-squared"
-                    value={`${Math.abs((result.r2_score * 100).toFixed(1))}%`}
+                    value={`${100-Math.abs((result.r2_score * 100).toFixed(1))}%`}
                     color="green"
                   />
                   {result.mae !== undefined && (
