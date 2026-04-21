@@ -1,6 +1,6 @@
 # NEURAL GRID: Advanced EV Demand Forecasting System
 
-## 🚀 Project Overview
+## Project Overview
 
 **NEURAL GRID** is an intelligent AI-powered system for predicting Electric Vehicle (EV) charging demand at grid stations using advanced machine learning, time-series analysis, and multi-agent AI planning.
 
@@ -13,7 +13,7 @@ The system combines:
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [Quick Start](#quick-start)
 2. [Architecture](#architecture)
@@ -28,7 +28,7 @@ The system combines:
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Option 1: Local Development
 
@@ -60,7 +60,7 @@ The app is deployed on Render and accessible at:
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### System Components
 
@@ -122,36 +122,36 @@ Raw CSV Data
 
 ---
 
-## ✨ Features
+## Features
 
-### 1. **Real-time Inference** 📊
+### 1. Real-time Inference
 - Manual single-point predictions
 - Interactive input sliders for Hour, Day, and historical demand
 - 24-hour forecast visualization
 - Demand status indicators (Normal/Warning/Alert)
 
-### 2. **Batch Processing** 📁
+### 2. Batch Processing
 - Upload CSV files with EV charging data
 - Automatic preprocessing and feature engineering
 - Bulk predictions with error metrics (R², MAE)
 - CSV download of predictions
 - Data quality metrics and visualization
 
-### 3. **AI Infrastructure Planning** 🤖
+### 3. AI Infrastructure Planning
 - Multi-agent AI system using LangChain
 - Analyzes optimal charging patterns
 - Recommends maintenance windows
 - Grid load optimization strategies
 - Real-time planning context
 
-### 4. **Operations Dashboard** 📈
+### 4. Operations Dashboard
 - System health metrics
 - 24-hour demand patterns
 - Weekly analysis charts
 - Active alerts and notifications
 - Performance statistics
 
-### 5. **Intelligent Feature Engineering** 🧮
+### 5. Intelligent Feature Engineering
 The system automatically computes:
 
 | Feature | Description | Type |
@@ -177,7 +177,7 @@ The system automatically computes:
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
@@ -237,7 +237,7 @@ streamlit run src/app.py
 
 ---
 
-## 🎮 Usage
+## Usage
 
 ### Using Streamlit UI (Recommended)
 
@@ -326,7 +326,7 @@ print(f"Batch predictions: {predictions}")
 
 ---
 
-## 📊 Data Formats
+## Data Formats
 
 ### Input CSV Format (for Batch Processing)
 
@@ -363,7 +363,7 @@ Located in `/data/` directory:
 
 ---
 
-## 🧠 Model Details
+## Model Details
 
 ### Model Architecture
 
@@ -408,7 +408,7 @@ Located in `/data/` directory:
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Issue: "Model Loading Error: Can't get attribute '__pyx_unpickle_CyHalfSquaredError'"
 
@@ -476,7 +476,7 @@ pkill -f streamlit
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 GenAI_Project/
@@ -562,7 +562,7 @@ GenAI_Project/
 
 ---
 
-## 🔄 Data Flow
+## Data Flow
 
 ### Inference Pipeline
 
@@ -632,7 +632,7 @@ CSV File Upload
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 ### Bug Reports
 
@@ -659,13 +659,13 @@ Suggestions welcome for:
 
 ---
 
-## 📝 License
+## License
 
 [Your License Here - e.g., MIT, Apache 2.0, etc.]
 
 ---
 
-## 👥 Team & Credits
+## Team & Credits
 
 **Project**: NEURAL GRID - EV Demand Forecasting System
 **Institution**: Rishihood University
@@ -684,7 +684,7 @@ Suggestions welcome for:
 
 ---
 
-## 📞 Support
+## Support
 
 For issues or questions:
 1. Check [Troubleshooting](#troubleshooting) section
@@ -694,7 +694,7 @@ For issues or questions:
 
 ---
 
-## 🎯 Future Roadmap
+## Future Roadmap
 
 - [ ] Real-time API endpoint
 - [ ] Mobile app integration
@@ -707,4 +707,4 @@ For issues or questions:
 
 ---
 
-**Made with ❤️ for EV Infrastructure Optimization**
+**Made with care for EV Infrastructure Optimization**

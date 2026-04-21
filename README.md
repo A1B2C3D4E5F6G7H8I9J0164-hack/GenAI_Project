@@ -1,4 +1,4 @@
-# 🌐 NEURAL GRID: Advanced EV Demand Forecasting System
+# NEURAL GRID: Advanced EV Demand Forecasting System
 
 > **Intelligent AI-powered forecasting for Electric Vehicle charging demand**
 
@@ -7,18 +7,18 @@
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.0+-orange.svg)](https://scikit-learn.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## 📖 Quick Links
+## Quick Links
 
-- **📚 [Full Documentation](README_COMPREHENSIVE.md)** - Complete guide with architecture, usage, and troubleshooting
-- **🏗️ [Architecture Guide](ARCHITECTURE_WALKTHROUGH.md)** - Detailed technical architecture
-- **🚀 [Deployment Guide](DEPLOYMENT_GUIDE.md)** - Cloud deployment instructions
-- **✅ [Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Pre-deployment verification
+- **[Full Documentation](README_COMPREHENSIVE.md)** - Complete guide with architecture, usage, and troubleshooting
+- **[Architecture Guide](ARCHITECTURE_WALKTHROUGH.md)** - Detailed technical architecture
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Cloud deployment instructions
+- **[Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Pre-deployment verification
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1️⃣ Clone & Setup (2 minutes)
+### Clone & Setup (2 minutes)
 
 ```bash
 git clone https://github.com/CosmicMagnetar/GenAI_Project.git
@@ -32,37 +32,37 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r src/requirements.txt
 ```
 
-### 2️⃣ Run the App
+### Run the App
 
 ```bash
 streamlit run src/app.py
 ```
 
-Opens at `http://localhost:8501` 🎉
+Opens at `http://localhost:8501`
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 📊 Real-time Inference
+### Real-time Inference
 - Single-point predictions with instant feedback
 - 24-hour demand forecasting
 - Interactive input sliders
 - Visual demand status indicators
 
-### 📁 Batch Processing
+### Batch Processing
 - CSV file upload and processing
 - Automatic feature engineering
 - Bulk predictions with accuracy metrics
 - Results download as CSV
 
-### 🤖 AI Planning
+### AI Planning
 - Multi-agent infrastructure optimization
 - Intelligent maintenance scheduling
 - Grid load optimization recommendations
 - Real-time planning analysis
 
-### 📈 Operations Dashboard
+### Operations Dashboard
 - Live system metrics
 - Demand pattern visualization
 - Weekly trend analysis
@@ -70,7 +70,7 @@ Opens at `http://localhost:8501` 🎉
 
 ---
 
-## 🧠 How It Works
+## How It Works
 
 ```
 Input Data (Hour, Day, Demand History, External Factors)
@@ -98,19 +98,19 @@ Input Data (Hour, Day, Demand History, External Factors)
 
 ---
 
-## 📊 System Overview
+## System Overview
 
 | Component | Purpose | Status |
 |-----------|---------|--------|
-| **Streamlit UI** | Interactive prediction interface | ✅ Active |
-| **ML Model** | WeightedEnsemble forecasting | ✅ Optimized |
-| **Backend API** | FastAPI inference service | ✅ Ready |
-| **AI Agents** | LangChain planning module | ✅ Optional |
-| **Frontend** | React + Vite dashboard | ✅ Available |
+| **Streamlit UI** | Interactive prediction interface | Active |
+| **ML Model** | WeightedEnsemble forecasting | Optimized |
+| **Backend API** | FastAPI inference service | Ready |
+| **AI Agents** | LangChain planning module | Optional |
+| **Frontend** | React + Vite dashboard | Available |
 
 ---
 
-## 🔧 Requirements
+## Requirements
 
 - **Python**: 3.9 or higher
 - **RAM**: 2GB minimum
@@ -119,7 +119,7 @@ Input Data (Hour, Day, Demand History, External Factors)
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 GenAI_Project/
@@ -137,7 +137,7 @@ GenAI_Project/
 
 ---
 
-## 🎯 Common Tasks
+## Common Tasks
 
 ### Run Local Development
 ```bash
@@ -172,10 +172,10 @@ predictions = predictor.predict(df)
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### "Model Loading Error: '__pyx_unpickle_CyHalfSquaredError'"
-**Status**: ✅ Auto-handled with fallback model
+**Status**: Auto-handled with fallback model
 
 The app automatically detects scikit-learn version mismatches and uses a statistical fallback. Predictions continue to work normally.
 
@@ -190,29 +190,29 @@ This is optional. All other features work without it. To enable:
 pip install -r End_sem/backend/requirements.txt
 ```
 
-📖 See [README_COMPREHENSIVE.md](README_COMPREHENSIVE.md) for complete troubleshooting guide.
+See [README_COMPREHENSIVE.md](README_COMPREHENSIVE.md) for complete troubleshooting guide.
 
 ---
 
-## 📚 Documentation
+## Documentation
 
-- **[📖 Comprehensive Guide](README_COMPREHENSIVE.md)** - Full documentation, data formats, model details
-- **[🏗️ Architecture](ARCHITECTURE_WALKTHROUGH.md)** - Technical architecture and design
-- **[🚀 Deployment](DEPLOYMENT_GUIDE.md)** - Render, Docker, cloud deployment
-- **[✅ Checklist](DEPLOYMENT_CHECKLIST.md)** - Pre-deployment verification
+- **[Comprehensive Guide](README_COMPREHENSIVE.md)** - Full documentation, data formats, model details
+- **[Architecture](ARCHITECTURE_WALKTHROUGH.md)** - Technical architecture and design
+- **[Deployment](DEPLOYMENT_GUIDE.md)** - Render, Docker, cloud deployment
+- **[Checklist](DEPLOYMENT_CHECKLIST.md)** - Pre-deployment verification
 
 ---
 
-## 🌍 Live Demo
+## Live Demo
 
 Access the live application:
 - **URL**: [Your Render deployment URL]
-- **Status**: Active ✅
+- **Status**: Active
 - **Updated**: April 2026
 
 ---
 
-## 📝 Data Format
+## Data Format
 
 ### Input CSV
 ```csv
@@ -228,7 +228,7 @@ Datetime,EV Charging Demand (kW)
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please:
 1. Fork the repository
@@ -239,15 +239,15 @@ Report bugs with reproduction steps and system info.
 
 ---
 
-## 📞 Support
+## Support
 
-- 📚 Check [README_COMPREHENSIVE.md](README_COMPREHENSIVE.md) for detailed help
-- 🐛 Open GitHub issue for bugs
-- 💡 Suggest features via discussions
+- Check [README_COMPREHENSIVE.md](README_COMPREHENSIVE.md) for detailed help
+- Open GitHub issue for bugs
+- Suggest features via discussions
 
 ---
 
-## 🎓 Technology Stack
+## Technology Stack
 
 | Component | Technology |
 |-----------|-----------|
@@ -261,20 +261,20 @@ Report bugs with reproduction steps and system info.
 
 ---
 
-## 📄 License
+## License
 
 [Your License] - See LICENSE file
 
 ---
 
-## 👥 Team
+## Team
 
 **NEURAL GRID** - Advanced EV Demand Forecasting  
 Rishihood University | April 2026
 
 ---
 
-## 🎉 Getting Started
+## Getting Started
 
 1. **Clone**: `git clone [URL] && cd GenAI_Project`
 2. **Setup**: `python3 -m venv venv && source venv/bin/activate`
@@ -286,8 +286,8 @@ Rishihood University | April 2026
 
 <div align="center">
 
-**[📚 Full Documentation](README_COMPREHENSIVE.md) | [🏗️ Architecture](ARCHITECTURE_WALKTHROUGH.md) | [🚀 Deploy](DEPLOYMENT_GUIDE.md)**
+**[Full Documentation](README_COMPREHENSIVE.md) | [Architecture](ARCHITECTURE_WALKTHROUGH.md) | [Deploy](DEPLOYMENT_GUIDE.md)**
 
-Made with ❤️ for EV Infrastructure Optimization
+Made with care for EV Infrastructure Optimization
 
 </div>
