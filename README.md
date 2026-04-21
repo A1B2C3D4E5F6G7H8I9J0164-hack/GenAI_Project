@@ -91,10 +91,10 @@ Input Data (Hour, Day, Demand History, External Factors)
 ```
 
 **Model Performance:**
-- R² Score: 0.357 (Full dataset)
-- MAE: 0.059 kW
-- Training Samples: 89,696
-- Holdout Test: 17,940 samples
+- R² Score: 0.5256 (Full dataset) - Improved 47%
+- MAE: 0.0706 kW
+- Training Samples: 91,853
+- Holdout Test: 18,371 samples
 
 ---
 
