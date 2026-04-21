@@ -99,251 +99,70 @@ GenAI_Project/
 
 ### System Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      USER INTERFACE LAYER                        │
-│  ┌───────────────┐  ┌──────────────┐  ┌─────────────────────┐  │
-│  │  Streamlit    │  │   React      │  │  Operations         │  │
-│  │  Dashboard    │  │  Frontend    │  │  Dashboard          │  │
-│  └───────┬───────┘  └──────┬───────┘  └──────────┬──────────┘  │
-│          │                 │                     │               │
-└──────────┼─────────────────┼─────────────────────┼───────────────┘
-           │                 │                     │
-┌──────────┼─────────────────┼─────────────────────┼───────────────┐
-│          ▼                 ▼                     ▼               │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │         Feature Engineering & Preprocessing             │   │
-│  │  • Temporal Feature Extraction                           │   │
-│  │  • Cyclical Encoding (sin/cos)                           │   │
-│  │  • Time-Series Lags (1, 2, 3 hours)                     │   │
-│  │  • Rolling Statistics (moving averages & std)            │   │
-│  │  • Interaction Terms (Price × Hour, Price × EV Count)    │   │
-│  └──────────────────┬───────────────────────────────────────┘   │
-│                     │                                            │
-│  FEATURE ENGINEERING│                                            │
-│  LAYER              ▼                                            │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │         25-Dimensional Feature Vector                    │   │
-│  │  [Hour, DayOfWeek, Lags, Rolling Stats, External Data]  │   │
-│  └──────────────────┬───────────────────────────────────────┘   │
-│                     │                                            │
-│  ML MODEL LAYER     ▼                                            │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │           Weighted Ensemble Model                        │   │
-│  │  ┌────────────────────┐  ┌─────────────────────────┐    │   │
-│  │  │ HistGradient       │  │ GradientBoosting       │    │   │
-│  │  │ Boosting (60%)     │  │ Regressor (40%)        │    │   │
-│  │  └────────────────────┘  └─────────────────────────┘    │   │
-│  │                   │            │                        │   │
-│  │                   └─────┬──────┘                         │   │
-│  │                         ▼                                │   │
-│  │              Weighted Average Prediction                │   │
-│  └──────────────────┬───────────────────────────────────────┘   │
-│                     │                                            │
-│  PREDICTION         ▼                                            │
-│  OUTPUT             EV Charging Demand (kW)                     │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
-```
+![System Architecture](docs/architecture/system_architecture.png)
+
+**Description**: Multi-layered architecture showing:
+- User Interface Layer (Streamlit, React, Dashboard)
+- Feature Engineering Layer (temporal, lags, rolling stats, interactions)
+- 25-Dimensional Feature Vector Layer
+- ML Model Layer (HistGradientBoosting + GradientBoosting Ensemble)
+- Prediction Output (EV Charging Demand in kW)
 
 ### Data Pipeline Diagram
 
-```
-┌────────────────────────────────────────────────────────────┐
-│            Raw Data Sources                               │
-│  ┌──────────────────┐  ┌──────────────────────────────┐  │
-│  │ CSV Data Files   │  │ External Data Streams        │  │
-│  │ • Charging       │  │ • Price feeds                │  │
-│  │   station A,B,C  │  │ • Grid stability indices     │  │
-│  │ • 91,853 rows    │  │ • Renewable production       │  │
-│  │ • Hourly data    │  │ • EV charging counts         │  │
-│  └────────┬─────────┘  └─────────────┬────────────────┘  │
-│           │                          │                    │
-└───────────┼──────────────────────────┼────────────────────┘
-            │                          │
-┌───────────▼──────────────────────────▼────────────────────┐
-│              Data Loading & Merging                       │
-│  • Parse CSV files                                        │
-│  • Synchronize timestamps                                │
-│  • Fill missing external data with defaults               │
-│  • Combine all sources                                    │
-└───────────┬──────────────────────────────────────────────┘
-            │
-┌───────────▼──────────────────────────────────────────────┐
-│           Feature Engineering                            │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ Temporal Features:                               │   │
-│  │ • Hour (0-23) + DayOfWeek (0-6)                 │   │
-│  │ • Cyclical: hour_sin, hour_cos, dow_sin, dow_cos│   │
-│  │                                                 │   │
-│  │ Time-Series Features:                           │   │
-│  │ • Demand_Lag_1, Demand_Lag_2, Demand_Lag_3     │   │
-│  │ • Rolling_Avg_3h, Rolling_Avg_6h, Rolling_Std   │   │
-│  │                                                 │   │
-│  │ External & Interaction:                         │   │
-│  │ • Electricity Price, Grid Stability, EV Count   │   │
-│  │ • Solar/Wind Production, Battery Storage        │   │
-│  │ • Price_Hour_Interact, Price_EV_Interact        │   │
-│  └──────────────────────────────────────────────────┘   │
-└───────────┬──────────────────────────────────────────────┘
-            │
-┌───────────▼──────────────────────────────────────────────┐
-│         Feature Vector (25 dimensions)                   │
-│  Standardized using StandardScaler (mean=0, std=1)       │
-└───────────┬──────────────────────────────────────────────┘
-            │
-┌───────────▼──────────────────────────────────────────────┐
-│        Machine Learning Model                            │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │ WeightedEnsemble (Voting Regressor)            │    │
-│  │ • HistGradientBoostingRegressor (60% weight)   │    │
-│  │ • GradientBoostingRegressor (40% weight)       │    │
-│  └─────────────────────────────────────────────────┘    │
-└───────────┬──────────────────────────────────────────────┘
-            │
-┌───────────▼──────────────────────────────────────────────┐
-│        Prediction Output                                 │
-│  EV Charging Demand in kW (continuous value)             │
-└──────────────────────────────────────────────────────────┘
-```
+![Data Pipeline Flow](docs/architecture/data_pipeline.png)
+
+**Flow**: Raw CSV Data → Merging → Feature Engineering → 25-Feature Vector → StandardScaler → Ensemble Model → EV Demand Prediction
 
 ### Model Architecture Diagram
 
-```
-╔════════════════════════════════════════════════════════════╗
-║                   INPUT FEATURES (25)                      ║
-╠════════════════════════════════════════════════════════════╣
-║  Temporal (4)     │ Lags (3)      │ Rolling Stats (3)     ║
-║  • Hour           │ • Demand_Lag_1│ • Rolling_Avg_3h      ║
-║  • DayOfWeek      │ • Demand_Lag_2│ • Rolling_Avg_6h      ║
-║  • hour_sin       │ • Demand_Lag_3│ • Rolling_Std_3h      ║
-║  • hour_cos       │               │                       ║
-║  • dow_sin        │               │                       ║
-║  • dow_cos        │               │                       ║
-╠════════════════════════════════════════════════════════════╣
-║  External (9)     │ Interactions (2) │ Infrastructure (4) ║
-║  • Price          │ • Price_Hour     │ • Station_Capacity ║
-║  • Grid_Stability │ • Price_EV       │ • Peak_Demand      ║
-║  • EV_Count       │                  │ • Renewable_%      ║
-║  • Solar_Prod     │                  │ • Battery_Storage  ║
-║  • Wind_Prod      │                  │                    ║
-║  • Efficiency_%   │                  │                    ║
-║  • Renewable_%    │                  │                    ║
-║  • Total_Renewable│                  │                    ║
-║  • Charging_Eff   │                  │                    ║
-╠════════════════════════════════════════════════════════════╣
-║                StandardScaler Normalization                ║
-╠════════════════════════════════════════════════════════════╣
-║            WEIGHTED ENSEMBLE (Voting Regressor)            ║
-╠═════════════════════════╦═════════════════════════════════╣
-║                         ║                                 ║
-║  HistGradientBoosting   ║  GradientBoosting              ║
-║  (60% weight)           ║  (40% weight)                  ║
-║                         ║                                ║
-║  • max_iter: 100        ║  • n_estimators: 75            ║
-║  • max_depth: 10        ║  • max_depth: 6                ║
-║  • learning_rate: 0.08  ║  • learning_rate: 0.08         ║
-║  • l2_reg: 0.1          ║  • subsample: 0.88             ║
-║  • early_stopping       ║  • max_features: sqrt          ║
-║  • min_samples_leaf: 12 ║                                ║
-║                         ║                                ║
-║  └─────────────┬────────╨───────────┬──────────────────┘ ║
-║                │                    │                    ║
-║                └────────┬───────────┘                     ║
-║                         ▼                                 ║
-║             Weighted Average: 0.6*HGB + 0.4*GBR          ║
-╠════════════════════════════════════════════════════════════╣
-║              PREDICTION OUTPUT (1 value)                   ║
-║         EV Charging Demand in kW (continuous)              ║
-╠════════════════════════════════════════════════════════════╣
-║         MODEL PERFORMANCE (on 91,853 samples)              ║
-║  • Full-fit R²: 0.5256                                     ║
-║  • Full-fit MAE: 0.0706 kW                                ║
-║  • Holdout R²: -0.0687 (time-series generalization)       ║
-║  • Holdout MAE: 0.1202 kW                                 ║
-╚════════════════════════════════════════════════════════════╝
-```
+![Model Architecture](docs/architecture/model_architecture.png)
+
+**Components**:
+- **Input**: 25 features (Temporal, Time-Series, External, Infrastructure)
+- **Preprocessing**: StandardScaler normalization
+- **Model**: WeightedEnsemble combining:
+  - HistGradientBoostingRegressor (60% weight)
+  - GradientBoostingRegressor (40% weight)
+- **Output**: EV Charging Demand (kW)
+- **Performance**: R² Score 0.5256, MAE 0.0706 kW
 
 ### Inference Flow
 
-```
-User Input
-   │
-   ├─ Manual Prediction:
-   │  • Hour (0-23) slider
-   │  • DayOfWeek selector
-   │  • Historical demand inputs
-   │  • Optional external features
-   │
-   ├─ Batch Processing:
-   │  • CSV file upload
-   │  • Auto-extract datetime
-   │  • Auto-generate time features
-   │
-   └─ API Call:
-      • JSON payload with features
+![Inference Flow](docs/architecture/inference_flow.png)
 
-        ▼
+**Input Types**:
+- **Manual**: Hour (0-23), DayOfWeek, demand history
+- **Batch**: CSV file with hourly data
+- **API**: JSON payload with features
 
-  Feature Validation & Auto-filling
-   • Check if features are present
-   • Fill missing with intelligent defaults
-   • Ensure 25 features in correct order
-   
-        ▼
+**Process**:
+1. Feature Validation & Auto-filling (missing features filled with defaults)
+2. StandardScaler Transform (same as training)
+3. Ensemble Prediction (60% HistGradientBoosting + 40% GradientBoosting)
+4. Weighted Average (0.6 × pred1 + 0.4 × pred2)
+5. Output: EV Charging Demand (kW)
 
-  StandardScaler Transform
-   • Apply same scaling as training
-   • Mean=0, Std=1 normalization
-   
-        ▼
+---
 
-  Ensemble Prediction
-   ┌──────────────────────────────────────┐
-   │ HistGradientBoosting Prediction      │
-   │ WeightedEnsemble: 60% weight         │
-   └──────┬───────────────────────────────┘
-          │
-          │  ┌───────────────────────────┐
-          │  │ GradientBoosting Pred     │
-          │  │ WeightedEnsemble: 40%     │
-          │  └───────────┬───────────────┘
-          │              │
-          └──────┬───────┘
-                 ▼
-         Weighted Average
-         0.6 × pred1 + 0.4 × pred2
-                 
-                 ▼
+## Image Reference Guide
 
-  Output: EV Charging Demand (kW)
-   • Single prediction for manual inference
-   • Array of predictions for batch
-   • Confidence metrics when available
-```
-
-### Data Flow
+Store AI-generated architecture diagrams in the `docs/architecture/` folder:
 
 ```
-Raw CSV Data
-    ↓
-[Preprocessing & Feature Engineering]
-    ├─ Temporal Features (Hour, DayOfWeek)
-    ├─ Cyclical Encoding (sin/cos)
-    ├─ Time-Series Lags (1, 2, 3 hours)
-    ├─ Rolling Statistics (3h, 6h moving avg/std)
-    ├─ External Data (price, grid stability, renewables)
-    ↓
-[Feature Vector - 25 Features]
-    ↓
-[ML Model]
-    ├─ HistGradientBoostingRegressor
-    ├─ GradientBoostingRegressor
-    ├─ Random Forest (weighted ensemble)
-    ↓
-[Predictions]
-    └─ EV Charging Demand (kW)
+docs/
+└── architecture/
+    ├── system_architecture.png       # System components and layers
+    ├── data_pipeline.png             # Data flow from raw to prediction
+    ├── model_architecture.png        # ML model structure and components
+    └── inference_flow.png            # Prediction inference pipeline
 ```
+
+**How to add images**:
+1. Generate diagrams using AI image generator (DALL-E, Midjourney, etc.)
+2. Create `docs/architecture/` folder if not exists
+3. Save PNG images to the folder
+4. Images will automatically display in this README when rendered on GitHub
 
 ---
 
